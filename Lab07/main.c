@@ -8,8 +8,9 @@ Gabriel Oliveira dos Santos - RA
 typedef struct No {
     struct No* esq;
     struct No* dir;
-    char[30] pasta;
-    char[30] programa;
+    int valor;
+    //char[30] pasta;
+    //char[30] programa;
 } No;
 
 typedef struct Arvore {
@@ -18,20 +19,47 @@ typedef struct Arvore {
     //TODO - Campo in-ordem para a cópia de segurança.
 } Arvore;
 
+No* criarNo(int valor) {
+    No* no = malloc(sizeof(No));
+    no->valor = valor;
+    no->esq = NULL;
+    no->dir = NULL;
+    return no;
+}
+
 //A função retorna um ponteiro para a raiz da nova árvore.
-No* reconstruir(int preordem [], int inordem[], int tamanho) {
-	if (tamanho == 1) {
-        /*Caso base: a pré-ordem e a in-ordem são iguais e consistem de um único nó,
-        que vai ser a raiz. Então criamos esse tal nó e retornamos ele, ele é a raiz
-        da nossa árvore.*/
-        No* raiz = criarNo(/*passamos os parâmetros desejados para a criação do nó aqui e pronto*/);
-        return raiz;
-	}
-    //Quando não é o caso base, precisamos considerar subárvores.
+No* reconstruir(int preordem [], int inicioPreordem, int fimPreordem, int inordem[], int inicioInordem, int fimInordem) {
     //Dada a pré-ordem, seu primeiro nó é a raiz.
-    int valorRaiz = preordem[0];
-    //Então nós procuramos esse valor na inordem, porque à esquerda vai estar a
+    int valorRaiz = preordem[inicioPreordem];
+    No* raiz = criarNo(valorRaiz);
+    if (inicioPreordem == fimPreordem && inicioInordem == fimInordem) {
+        return raiz;
+    }
+    //Então nós procuramos esse valor na in-ordem, porque à esquerda vai estar a
     //subárvore esquerda e à direita vai estar a subárvore direita.
+    int inicioInordemSubarvoreEsquerda;
+    int fimInordemSubarvoreEsquerda;
+    int inicioInordemSubarvoreDireita;
+    int fimInordemSubarvoreDireita;
+    for (int i = inicioInordem; i <= fimInordem; i++) {
+        if (inordem[i] == valorRaiz) {
+            //Das posições inicioInordem até i - 1 temos a subárvore esquerda.
+            inicioInordemSubarvoreEsquerda = inicioInordem;
+            fimInordemSubarvoreEsquerda = i - 1;
+            //Das posições i + 1 até fimInordem temos a subárvore direita.
+            inicioInordemSubarvoreDireita = i + 1;
+            fimInordemSubarvoreDireita = fimInordem;
+        }
+    }
+    int comprimentoSubarvoreEsquerda = fimInordemSubarvoreEsquerda - inicioInordemSubarvoreEsquerda + 1;
+    int comprimentoSubarvoreDireita = fimInordemSubarvoreDireita - inicioInordemSubarvoreDireita + 1;
+    //Agora, sabendo os comprimentos, vamos determinar os índices de início e fim das pré-ordens.
+    int inicioPreordemSubarvoreEsquerda = 1;
+    int fimPreordemSubarvoreEsquerda = comprimentoSubarvoreEsquerda;
+    int inicioPreordemSubarvoreDireita = fimPreordemSubarvoreEsquerda + 1;
+    int fimPreordemSubarvoreDireita = fimPreordem;
+    raiz->esq = reconstruir(preordem, inicioPreordemSubarvoreEsquerda, fimPreordemSubarvoreEsquerda, inordem, inicioInordemSubarvoreEsquerda, fimInordemSubarvoreEsquerda);
+    raiz->dir = reconstruir(preordem, inicioPreordemSubarvoreDireita, fimPreordemSubarvoreDireita, inordem, inicioInordemSubarvoreDireita, fimInordemSubarvoreDireita);
 }
 
 void instalarNovoPrograma() {
