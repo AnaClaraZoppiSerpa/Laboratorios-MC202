@@ -79,102 +79,155 @@ void instalarNovoPrograma(Arvore *arvore) {
 
 void retiraNo(No* no, No* pai){
 
-    //é uma folha, simplesmente remove e faz o pai apontar para nulo
-    if(no->esq == NULL && no->dir == NULL){
-        if(pai->dir == no){
-            pai->dir = NULL;
-        }else{
-            pai->esq = NULL;
+    //retirar a raiz
+    if(pai == NULL){
+
+        //só tem a raiz
+        if(no->dir == NULL && no->esq == NULL){
+            free(no);
+            no = NULL;
         }
+        else{
 
-        no = NULL;
-        free(no);
-    }else{
-        //se tem apenas um filho, faça pai apontar para o neto
-        if(no->esq == NULL && no->dir != NULL){ //tem apenas o filho direito
-            if(pai->dir == no){
-                pai->dir = no->dir;
-            }else{
-                pai->esq = no->dir;
+            //se tem dois filhos
+            if(no->dir != NULL && no->esq != NULL){
+                //se tem os dois filhos, troca com a folha mais a direita da subarvore da direita
+                //e remove essa folha
+                char nomeAux[30];
+                No* aux = no->esq;
+                pai = no;
+
+                while(aux->dir != NULL){
+                    pai = aux;
+                    aux = aux->dir;
+                }
+
+                //troca a informação com o no mais a direita da subarvore da esquerda
+                strcpy(nomeAux, no->programa);
+                strcpy(no->programa, aux->programa);
+                strcpy(aux->programa, nomeAux);
+
+                strcpy(nomeAux, no->pasta);
+                strcpy(no->pasta, aux->pasta);
+                strcpy(aux->pasta, nomeAux);
+
+                retiraNo(aux, pai);
+            }
+            else{//tem apenas um filho
+
+                //tem apenas o filho esquerdo
+                if(no->esq != NULL){
+                    no = no->esq;
+                }
+                else{ //tem apenas o filho direito
+                    no = no->dir;
+                }
+            }
+        }
+    }else {
+        //é uma folha, simplesmente remove e faz o pai apontar para nulo
+        if (no->esq == NULL && no->dir == NULL) {
+            if (pai->dir == no) {
+                pai->dir = NULL;
+            } else {
+                pai->esq = NULL;
             }
 
             no = NULL;
             free(no);
-        }else if(no->dir == NULL && no->esq != NULL){ //tem apenas o filho esquerdo
-            if(pai->dir == no){
-                pai->dir = no->esq;
-            }else{
-                pai->esq = no->esq;
+        } else {
+            //se tem apenas um filho, faça pai apontar para o neto
+            if (no->esq == NULL && no->dir != NULL) { //tem apenas o filho direito
+                if (pai->dir == no) {
+                    pai->dir = no->dir;
+                } else {
+                    pai->esq = no->dir;
+                }
+
+                no = NULL;
+                free(no);
+            } else if (no->dir == NULL && no->esq != NULL) { //tem apenas o filho esquerdo
+                if (pai->dir == no) {
+                    pai->dir = no->esq;
+                } else {
+                    pai->esq = no->esq;
+                }
+
+                no = NULL;
+                free(no);
+            } else {
+
+                //se tem os dois filhos, troca com a folha mais a direita da subarvore da direita
+                //e remove essa folha
+                char nomeAux[30];
+                No *aux = no->esq;
+                pai = no;
+
+                while (aux->dir != NULL) {
+                    pai = aux;
+                    aux = aux->dir;
+                }
+
+                //troca a informação com o no mais a direita da subarvore da esquerda
+                strcpy(nomeAux, no->programa);
+                strcpy(no->programa, aux->programa);
+                strcpy(aux->programa, nomeAux);
+
+                strcpy(nomeAux, no->pasta);
+                strcpy(no->pasta, aux->pasta);
+                strcpy(aux->pasta, nomeAux);
+
+                retiraNo(aux, pai);
             }
-
-            no = NULL;
-            free(no);
-        }else{
-
-            //se tem os dois filhos, troca com a folha mais a direita da subarvore da direita
-            //e remove essa folha
-            char nomeAux[30];
-            No* aux = no->esq;
-            No* pai;
-
-            while(aux->dir != NULL){
-                pai = aux;
-                aux = aux->dir;
-            }
-
-            strcpy(nomeAux, no->programa);
-            strcpy(no->programa, aux->programa);
-            strcpy(aux->programa, nomeAux);
-
-            retiraNo(aux, pai);
         }
     }
 }
 
-No* removeRec(No* raiz, char* programa){
+No* removeRec(No* raiz, char* programa, int* removeu){
     //árvore vazia
     if(raiz == NULL){
+        *removeu = 0;
         return NULL;
     }
 
-    //caso tenha apenas a raiz
-    if(raiz->dir == NULL && raiz->esq == NULL){
-       free(raiz);
-        raiz = NULL;
-    }
-    else{
+    if(strcmp(raiz->programa, programa) == 0){
+        retiraNo(raiz, NULL);
+        *removeu = 1;
+    }else {
+
         //se o programa a ser removido é o filho esquerdo ou direito, remove-o
-        if(raiz->esq != NULL && strcmp(raiz->esq->programa, programa) == 0){
+        if (raiz->esq != NULL && strcmp(raiz->esq->programa, programa) == 0) {
             retiraNo(raiz->esq, raiz);
-        }
-        else if(raiz->dir != NULL && strcmp(raiz->dir->programa, programa) == 0){
+            *removeu = 1;
+        } else if (raiz->dir != NULL && strcmp(raiz->dir->programa, programa) == 0) {
             retiraNo(raiz->dir, raiz);
-        }else{
-            //se o programa se removido não é um filho, então busca na subarvore da esquerda
+            *removeu = 1;
+        } else {
+            //se o programa a ser removido não é um filho, então busca na subarvore da esquerda
             //caso seja menor que a raiz, ou na direita, caso contrário
-            if(strcmp(programa, raiz->programa) < 0)
-                raiz->esq = removeRec(raiz->esq, programa);
-            else{
-                raiz->dir = removeRec(raiz->dir, programa);
+            if (strcmp(programa, raiz->programa) < 0)
+                raiz->esq = removeRec(raiz->esq, programa, removeu);
+            else {
+                raiz->dir = removeRec(raiz->dir, programa, removeu);
             }
         }
     }
-
 
     return raiz;
 }
 
 void desinstalarPrograma(Arvore* arvore) {
     char programa[30];
+    int removeu = 0;
     scanf("%s", &programa);
 
-    No* aux = removeRec(arvore->raiz, programa);
+    No* aux = removeRec(arvore->raiz, programa, &removeu);
 
     //não encontrou o programa
-    if(strcmp(programa, arvore->raiz->programa) != 0 && aux == NULL){
-        printf("[UNINSTALL] Nao foi encontrado no sistema nenhum programa com nome %s\n", programa);
-    }else{
+    if(removeu){
         printf("[UNINSTALL] Programa %s.exe desinstalado com sucesso\n", programa);
+    }else{
+        printf("[UNINSTALL] Nao foi encontrado no sistema nenhum programa com nome %s\n", programa);
     }
 }
 
