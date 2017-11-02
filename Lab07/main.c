@@ -38,20 +38,21 @@ typedef struct Arvore {
 //    //subárvore esquerda e à direita vai estar a subárvore direita.
 //}
 
-No* insereRec(No* raiz, No* novo){
+//sempre retorna a raiz
+No* insereRec(No* raiz, No** novo){
     if(raiz == NULL){
-        return novo;
+        return *novo;
     }
 
-    if(strcmp(novo->programa, raiz->programa) < 0){
+    if(strcmp((*novo)->programa, raiz->programa) < 0){
         raiz->esq = insereRec(raiz->esq, novo);
-        if(raiz->esq == novo){
+        if(raiz->esq == *novo){
             strcpy(raiz->esq->pasta, raiz->programa);
             strcat(raiz->esq->pasta, "_esq");
         }
     }else{
         raiz->dir = insereRec(raiz->dir, novo);
-        if(raiz->dir == novo){
+        if(raiz->dir == *novo){
             strcpy(raiz->dir->pasta, raiz->programa);
             strcat(raiz->dir->pasta, "_dir");
         }
@@ -67,15 +68,114 @@ void instalarNovoPrograma(Arvore *arvore) {
     novo->esq = NULL;
     novo->dir = NULL;
 
-    No* aux = insereRec(arvore->raiz, novo);
+    No* aux = insereRec(arvore->raiz, &novo);
     if(arvore->raiz == NULL){
         strcpy(aux->pasta, "raiz");
         arvore->raiz = aux;
     }
+
+    printf("[INSTALL] Programa %s.exe instalado com sucesso na pasta %s\n", novo->programa, novo->pasta);
 }
 
-void desinstalarPrograma() {
+void retiraNo(No* no, No* pai){
 
+    //é uma folha, simplesmente remove e faz o pai apontar para nulo
+    if(no->esq == NULL && no->dir == NULL){
+        if(pai->dir == no){
+            pai->dir = NULL;
+        }else{
+            pai->esq = NULL;
+        }
+
+        no = NULL;
+        free(no);
+    }else{
+        //se tem apenas um filho, faça pai apontar para o neto
+        if(no->esq == NULL && no->dir != NULL){ //tem apenas o filho direito
+            if(pai->dir == no){
+                pai->dir = no->dir;
+            }else{
+                pai->esq = no->dir;
+            }
+
+            no = NULL;
+            free(no);
+        }else if(no->dir == NULL && no->esq != NULL){ //tem apenas o filho esquerdo
+            if(pai->dir == no){
+                pai->dir = no->esq;
+            }else{
+                pai->esq = no->esq;
+            }
+
+            no = NULL;
+            free(no);
+        }else{
+
+            //se tem os dois filhos, troca com a folha mais a direita da subarvore da direita
+            //e remove essa folha
+            char nomeAux[30];
+            No* aux = no->esq;
+            No* pai;
+
+            while(aux->dir != NULL){
+                pai = aux;
+                aux = aux->dir;
+            }
+
+            strcpy(nomeAux, no->programa);
+            strcpy(no->programa, aux->programa);
+            strcpy(aux->programa, nomeAux);
+
+            retiraNo(aux, pai);
+        }
+    }
+}
+
+No* removeRec(No* raiz, char* programa){
+    //árvore vazia
+    if(raiz == NULL){
+        return NULL;
+    }
+
+    //caso tenha apenas a raiz
+    if(raiz->dir == NULL && raiz->esq == NULL){
+       free(raiz);
+        raiz = NULL;
+    }
+    else{
+        //se o programa a ser removido é o filho esquerdo ou direito, remove-o
+        if(raiz->esq != NULL && strcmp(raiz->esq->programa, programa) == 0){
+            retiraNo(raiz->esq, raiz);
+        }
+        else if(raiz->dir != NULL && strcmp(raiz->dir->programa, programa) == 0){
+            retiraNo(raiz->dir, raiz);
+        }else{
+            //se o programa se removido não é um filho, então busca na subarvore da esquerda
+            //caso seja menor que a raiz, ou na direita, caso contrário
+            if(strcmp(programa, raiz->programa) < 0)
+                raiz->esq = removeRec(raiz->esq, programa);
+            else{
+                raiz->dir = removeRec(raiz->dir, programa);
+            }
+        }
+    }
+
+
+    return raiz;
+}
+
+void desinstalarPrograma(Arvore* arvore) {
+    char programa[30];
+    scanf("%s", &programa);
+
+    No* aux = removeRec(arvore->raiz, programa);
+
+    //não encontrou o programa
+    if(strcmp(programa, arvore->raiz->programa) != 0 && aux == NULL){
+        printf("[UNINSTALL] Nao foi encontrado no sistema nenhum programa com nome %s\n", programa);
+    }else{
+        printf("[UNINSTALL] Programa %s.exe desinstalado com sucesso\n", programa);
+    }
 }
 
 void testarVelocidadeDeResposta() {
@@ -94,6 +194,7 @@ void restaurarCopiaDeSeguranca() {
 
 }
 
+//TODO fazer essa função como no enunciado, pois aqui é apenas um in-ordem para teste
 void imprimirTodosOsProgramas(No* raiz) {
     if(raiz != NULL){
         printf("(");
@@ -124,7 +225,7 @@ int main() {
                 break;
 
             case 2:
-                desinstalarPrograma();
+                desinstalarPrograma(&arvore);
                 break;
 
             case 3:
@@ -144,7 +245,7 @@ int main() {
                 break;
 
             case 7:
-                imprimirTodosOsProgramas(arvore.raiz);
+                imprimirTodosOsProgramas(arvore.raiz); printf("\n");
                 break;
 
         }
