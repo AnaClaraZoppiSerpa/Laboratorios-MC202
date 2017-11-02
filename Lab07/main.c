@@ -231,8 +231,30 @@ void desinstalarPrograma(Arvore* arvore) {
     }
 }
 
-void testarVelocidadeDeResposta() {
+int calculaAltura(No* raiz, char* programa){
+    if(raiz == NULL || strcmp(raiz->programa, programa) == 0)
+        return 0;
 
+    if(strcmp(programa, raiz->programa) < 0)
+        return 1+calculaAltura(raiz->esq, programa);
+
+    return 1+calculaAltura(raiz->dir, programa);
+}
+
+void testarVelocidadeDeResposta(Arvore arvore) {
+    int tempoObtido, tempoEsperado;
+    char programa[30];
+
+    scanf("%s", &programa);
+    scanf("%d", &tempoEsperado);
+
+    tempoObtido = calculaAltura(arvore.raiz, programa);
+
+    if(tempoObtido > tempoEsperado){
+        printf("[DELAY][FAIL] O acesso ao programa %s.exe ultrapassou o limite de %d segundo\n", programa, tempoEsperado);
+    }else{
+        printf("[DELAY][OK] O acesso ao programa %s.exe foi concluido em %d segundos\n", programa, tempoObtido);
+    }
 }
 
 void otimizarCapacidadeDeResposta() {
@@ -282,7 +304,7 @@ int main() {
                 break;
 
             case 3:
-                testarVelocidadeDeResposta();
+                testarVelocidadeDeResposta(arvore);
                 break;
 
             case 4:
