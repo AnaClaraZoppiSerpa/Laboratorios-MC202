@@ -338,8 +338,49 @@ void otimizarCapacidadeDeResposta() {
 
 }
 
-void criarCopiasDeSeguranca() {
+int contarNos(No* raiz) {
+    if (raiz == NULL)
+        return 0;
+    return 1 + contarNos(raiz->esq) + contarNos(raiz->dir);
+}
 
+void sementePreordem(No* raiz, char** preordem, int* indice) {
+    if (raiz) {
+        strcpy(preordem[*indice], raiz->programa);
+        *indice = *indice + 1;
+        sementePreordem(raiz->esq, preordem, indice);
+        sementePreordem(raiz->dir, preordem, indice);
+    }
+}
+
+void sementeInordem(No* raiz, char** inordem, int* indice) {
+    if (raiz) {
+        sementeInordem(raiz->esq, inordem, indice);
+        strcpy(inordem[*indice], raiz->programa);
+        *indice = *indice + 1;
+        sementePreordem(raiz->dir, inordem, indice);
+    }
+}
+
+void criarCopiasDeSeguranca(Arvore* arvore) {
+    int quantos = contarNos(arvore->raiz);
+    char* inordem [quantos];
+    char* preordem [quantos];
+
+    for (int i = 0; i < quantos; i++) {
+        inordem[i] = malloc(30 * sizeof(char));
+        preordem[i] = malloc(30 * sizeof(char));
+    }
+
+    int indice = 0;
+    sementePreordem(arvore->raiz, preordem, &indice);
+    indice = 0;
+    sementeInordem(arvore->raiz, inordem, &indice);
+
+    arvore->preordemCopiaDeSeguranca = preordem;
+    arvore->inordemCopiaDeSeguranca = inordem;
+
+    printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
 }
 
 void restaurarCopiaDeSeguranca() {
@@ -412,7 +453,7 @@ int main() {
                 break;
 
             case 5:
-                criarCopiasDeSeguranca();
+                criarCopiasDeSeguranca(&arvore);
                 break;
 
             case 6:
