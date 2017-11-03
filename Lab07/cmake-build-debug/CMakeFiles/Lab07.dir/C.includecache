@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/gabri/mc-202/Laboratorios-MC202/Lab07/main.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+

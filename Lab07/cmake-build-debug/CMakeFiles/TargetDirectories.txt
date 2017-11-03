@@ -1,0 +1,3 @@
+C:/Users/gabri/mc-202/Laboratorios-MC202/Lab07/cmake-build-debug/CMakeFiles/Lab07.dir
+C:/Users/gabri/mc-202/Laboratorios-MC202/Lab07/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/gabri/mc-202/Laboratorios-MC202/Lab07/cmake-build-debug/CMakeFiles/rebuild_cache.dir
