@@ -20,6 +20,7 @@ typedef struct Arvore {
     No* raiz;
     char** preordemCopiaDeSeguranca;
     char** inordemCopiaDeSeguranca;
+    int quantosNosCopiaDeSeguranca;
 } Arvore;
 
 No* criarNo(char* nomePrograma, char* nomePasta) {
@@ -379,12 +380,24 @@ void criarCopiasDeSeguranca(Arvore* arvore) {
 
     arvore->preordemCopiaDeSeguranca = preordem;
     arvore->inordemCopiaDeSeguranca = inordem;
+    arvore->quantosNosCopiaDeSeguranca = quantos;
 
     printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
 }
 
-void restaurarCopiaDeSeguranca() {
+//apenas pra teste, pode apagar dps
+void pre(No* arv) {
+    if (arv) {
+        printf("Programa %s Pasta %s, ", arv->programa, arv->pasta);
+        pre(arv->esq);
+        pre(arv->dir);
+    }
+}
 
+void restaurarCopiaDeSeguranca(Arvore* arvore) {
+    No* novaRaiz = reconstruir(arvore->preordemCopiaDeSeguranca, arvore->inordemCopiaDeSeguranca, arvore->quantosNosCopiaDeSeguranca, "raiz");
+    arvore->raiz = novaRaiz;
+    printf("[RESTORE] Sistema restaurado para a versao do backup\n");
 }
 
 //TODO fazer essa função como no enunciado, pois aqui é apenas um in-ordem para teste
@@ -433,6 +446,7 @@ int main() {
     arvore.raiz = raiz;
     arvore.inordemCopiaDeSeguranca = inordem;
     arvore.preordemCopiaDeSeguranca = preordem;
+    arvore.quantosNosCopiaDeSeguranca = quantidadePresenteAoIniciar;
 
     while (scanf("%d", &operacao) != EOF) {
         switch (operacao) {
@@ -457,7 +471,7 @@ int main() {
                 break;
 
             case 6:
-                restaurarCopiaDeSeguranca();
+                restaurarCopiaDeSeguranca(&arvore);
                 break;
 
             case 7:
