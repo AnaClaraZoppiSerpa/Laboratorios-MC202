@@ -32,7 +32,7 @@ No* criarNo(char* nomePrograma, char* nomePasta) {
 }
 
 //A função retorna um ponteiro para a raiz da nova árvore.
-No* reconstruir(char* preordem [], char* inordem [], int tamanho) {
+No* reconstruir(char* preordem [], char* inordem [], int tamanho, char* nomePastaRaiz) {
     //Dada a pré-ordem, seu primeiro nó é a raiz.
     if (tamanho == 0) {
         return NULL;
@@ -41,7 +41,7 @@ No* reconstruir(char* preordem [], char* inordem [], int tamanho) {
     char* valorRaiz = malloc(30 * sizeof(char));
     strcpy(valorRaiz, preordem[0]);
 
-    No* raiz = criarNo(valorRaiz, "pasta");
+    No* raiz = criarNo(valorRaiz, nomePastaRaiz);
     if (tamanho == 1) {
         return raiz;
     }
@@ -103,8 +103,15 @@ No* reconstruir(char* preordem [], char* inordem [], int tamanho) {
         indiceParaNovoVetor++;
     }
 
-    raiz->esq = reconstruir(preordemSubarvoreEsquerda, inordemSubarvoreEsquerda, comprimentoSubarvoreEsquerda);
-    raiz->dir = reconstruir(preordemSubarvoreDireita, inordemSubarvoreDireita, comprimentoSubarvoreDireita);
+    char* pastaEsq = malloc(30 * sizeof(char));
+    strcpy(pastaEsq, valorRaiz);
+    strcat(pastaEsq, "_esq");
+
+    char* pastaDir = malloc(30 * sizeof(char));
+    strcpy(pastaDir, valorRaiz);
+    strcat(pastaDir, "_dir");
+    raiz->esq = reconstruir(preordemSubarvoreEsquerda, inordemSubarvoreEsquerda, comprimentoSubarvoreEsquerda, pastaEsq);
+    raiz->dir = reconstruir(preordemSubarvoreDireita, inordemSubarvoreDireita, comprimentoSubarvoreDireita, pastaDir);
     return raiz;
 }
 
@@ -378,7 +385,7 @@ int main() {
     int operacao;
 
     //Reconstrução da árvore binária a partir dos percursos dados.
-    No* raiz = reconstruir(preordem, inordem, quantidadePresenteAoIniciar);
+    No* raiz = reconstruir(preordem, inordem, quantidadePresenteAoIniciar, "raiz");
 
     //Armazenamento dos percursos dados como cópia de segurança atual.
     Arvore arvore;
