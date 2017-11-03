@@ -18,25 +18,129 @@ typedef struct No {
 
 typedef struct Arvore {
     No* raiz;
-    //TODO - Campo para a préordem da cópia de segurança.
-    //TODO - Campo in-ordem para a cópia de segurança.
+    char** preordemCopiaDeSeguranca;
+    char** inordemCopiaDeSeguranca;
+    int quantosNosCopiaDeSeguranca;
 } Arvore;
 
-////A função retorna um ponteiro para a raiz da nova árvore.
-//No* reconstruir(int preordem [], int inordem[], int tamanho) {
-//	if (tamanho == 1) {
-//        /*Caso base: a pré-ordem e a in-ordem são iguais e consistem de um único nó,
-//        que vai ser a raiz. Então criamos esse tal nó e retornamos ele, ele é a raiz
-//        da nossa árvore.*/
-//        No* raiz = criarNo(/*passamos os parâmetros desejados para a criação do nó aqui e pronto*/);
-//        return raiz;
-//	}
-//    //Quando não é o caso base, precisamos considerar subárvores.
-//    //Dada a pré-ordem, seu primeiro nó é a raiz.
-//    int valorRaiz = preordem[0];
-//    //Então nós procuramos esse valor na inordem, porque à esquerda vai estar a
-//    //subárvore esquerda e à direita vai estar a subárvore direita.
-//}
+typedef struct Pilha {
+    No** pilha;
+    int qtd;
+    int limite;
+} Pilha;
+
+
+int empilhar(Pilha* p, No* no){
+    if(p->qtd < p->limite){
+        p->pilha[p->qtd] = no;
+        p->qtd++;
+
+        return 1;
+    }
+
+    return 0;
+}
+
+No* desempilhar(Pilha* p){
+    if(p->qtd == 0)
+        return NULL;
+
+    p->qtd--;
+    return p->pilha[p->qtd];
+}
+
+No* criarNo(char* nomePrograma, char* nomePasta) {
+    No* no = malloc(sizeof(No));
+    no->esq = NULL;
+    no->dir = NULL;
+    strcpy(no->programa, nomePrograma);
+    strcpy(no->pasta, nomePasta);
+    return no;
+}
+
+//A função retorna um ponteiro para a raiz da nova árvore.
+No* reconstruir(char* preordem [], char* inordem [], int tamanho, char* nomePastaRaiz) {
+    //Dada a pré-ordem, seu primeiro nó é a raiz.
+    if (tamanho == 0) {
+        return NULL;
+    }
+
+    char* valorRaiz = malloc(30 * sizeof(char));
+    strcpy(valorRaiz, preordem[0]);
+
+    No* raiz = criarNo(valorRaiz, nomePastaRaiz);
+    if (tamanho == 1) {
+        return raiz;
+    }
+
+    //Então nós procuramos esse valor na in-ordem, porque à esquerda vai estar a
+    //subárvore esquerda e à direita vai estar a subárvore direita.
+    int comprimentoSubarvoreEsquerda = 0, comprimentoSubarvoreDireita = 0;
+    int indiceDaRaizNaInordem = 0;
+    for (int i = 0; i < tamanho; i++) {
+        if (strcmp(inordem[i], valorRaiz) == 0) {
+            indiceDaRaizNaInordem = i;
+            //Das posições x tais que 0 <= x < i temos a inordem da subárvore esquerda.
+            comprimentoSubarvoreEsquerda = i;
+            //Das posições y tais que i + 1 <= y < tamanho temos a inordem da subárvore direita.
+            comprimentoSubarvoreDireita = tamanho - i - 1;
+            break;
+        }
+    }
+
+    char* inordemSubarvoreEsquerda [comprimentoSubarvoreEsquerda];
+    char* inordemSubarvoreDireita [comprimentoSubarvoreDireita];
+    char* preordemSubarvoreDireita [comprimentoSubarvoreDireita];
+    char* preordemSubarvoreEsquerda [comprimentoSubarvoreEsquerda];
+
+    //A pré-ordem da subárvore esquerda é obtida percorrendo, a partir da posição 1 e até completar as unidades do comprimento, a pré-ordem fornecida por parâmetro.
+    //A pré-ordem da subárvore direita começa logo depois, percorrendo, também, até completar as unidades do comprimento.
+    int indicePreordem = 1;
+    int indiceParaNovoVetor = 0;
+    int contadorComprimento = 0;
+
+    while (contadorComprimento < comprimentoSubarvoreEsquerda) {
+        preordemSubarvoreEsquerda[indiceParaNovoVetor] = malloc(30 * sizeof(char));
+        strcpy(preordemSubarvoreEsquerda[indiceParaNovoVetor], preordem[indicePreordem]);
+        contadorComprimento++;
+        indicePreordem++;
+        indiceParaNovoVetor++;
+    }
+
+    contadorComprimento = 0;
+    indiceParaNovoVetor = 0;
+
+    while (contadorComprimento < comprimentoSubarvoreDireita) {
+        preordemSubarvoreDireita[indiceParaNovoVetor] = malloc(30 * sizeof(char));
+        strcpy(preordemSubarvoreDireita[indiceParaNovoVetor], preordem[indicePreordem]);
+        contadorComprimento++;
+        indicePreordem++;
+        indiceParaNovoVetor++;
+    }
+
+    //De 0 até o índice da raiz, temos a in-ordem da subárvore esquerda. De índice da raiz + 1 até o fim, temos a in-ordem da subárvore direita.
+    for (int i = 0; i < indiceDaRaizNaInordem; i++) {
+        inordemSubarvoreEsquerda[i] = malloc(30 * sizeof(char));
+        strcpy(inordemSubarvoreEsquerda[i], inordem[i]);
+    }
+    indiceParaNovoVetor = 0;
+    for (int i = indiceDaRaizNaInordem + 1; i < tamanho; i++) {
+        inordemSubarvoreDireita[indiceParaNovoVetor] = malloc(30 * sizeof(char));
+        strcpy(inordemSubarvoreDireita[indiceParaNovoVetor], inordem[i]);
+        indiceParaNovoVetor++;
+    }
+
+    char* pastaEsq = malloc(30 * sizeof(char));
+    strcpy(pastaEsq, valorRaiz);
+    strcat(pastaEsq, "_esq");
+
+    char* pastaDir = malloc(30 * sizeof(char));
+    strcpy(pastaDir, valorRaiz);
+    strcat(pastaDir, "_dir");
+    raiz->esq = reconstruir(preordemSubarvoreEsquerda, inordemSubarvoreEsquerda, comprimentoSubarvoreEsquerda, pastaEsq);
+    raiz->dir = reconstruir(preordemSubarvoreDireita, inordemSubarvoreDireita, comprimentoSubarvoreDireita, pastaDir);
+    return raiz;
+}
 
 //sempre retorna a raiz
 No* insereRec(No* raiz, No** novo){
@@ -261,37 +365,135 @@ void otimizarCapacidadeDeResposta() {
 
 }
 
-void criarCopiasDeSeguranca() {
-
+int contarNos(No* raiz) {
+    if (raiz == NULL)
+        return 0;
+    return 1 + contarNos(raiz->esq) + contarNos(raiz->dir);
 }
 
-void restaurarCopiaDeSeguranca() {
-
+void sementePreordem(No* raiz, char** preordem, int* indice) {
+    if (raiz) {
+        strcpy(preordem[*indice], raiz->programa);
+        *indice = *indice + 1;
+        sementePreordem(raiz->esq, preordem, indice);
+        sementePreordem(raiz->dir, preordem, indice);
+    }
 }
 
-//TODO fazer essa função como no enunciado, pois aqui é apenas um in-ordem para teste
-void imprimirTodosOsProgramas(No* raiz) {
+void sementeInordem(No* raiz, char** inordem, int* indice) {
+    if (raiz) {
+        sementeInordem(raiz->esq, inordem, indice);
+        strcpy(inordem[*indice], raiz->programa);
+        *indice = *indice + 1;
+        sementePreordem(raiz->dir, inordem, indice);
+    }
+}
+
+void criarCopiasDeSeguranca(Arvore* arvore) {
+    int quantos = contarNos(arvore->raiz);
+    char* inordem [quantos];
+    char* preordem [quantos];
+
+    for (int i = 0; i < quantos; i++) {
+        inordem[i] = malloc(30 * sizeof(char));
+        preordem[i] = malloc(30 * sizeof(char));
+    }
+
+    int indice = 0;
+    sementePreordem(arvore->raiz, preordem, &indice);
+    indice = 0;
+    sementeInordem(arvore->raiz, inordem, &indice);
+
+    arvore->preordemCopiaDeSeguranca = preordem;
+    arvore->inordemCopiaDeSeguranca = inordem;
+    arvore->quantosNosCopiaDeSeguranca = quantos;
+
+    printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
+}
+
+//apenas pra teste, pode apagar dps
+void pre(No* arv) {
+    if (arv) {
+        printf("Programa %s Pasta %s, ", arv->programa, arv->pasta);
+        pre(arv->esq);
+        pre(arv->dir);
+    }
+}
+
+void restaurarCopiaDeSeguranca(Arvore* arvore) {
+    No* novaRaiz = reconstruir(arvore->preordemCopiaDeSeguranca, arvore->inordemCopiaDeSeguranca, arvore->quantosNosCopiaDeSeguranca, "raiz");
+    arvore->raiz = novaRaiz;
+    printf("[RESTORE] Sistema restaurado para a versao do backup\n");
+}
+
+
+//nesse método utilizamos uma pilha para guardar todo o caminhp
+//desde a raiz até o elemento proriamente dito
+
+// se desce um nível então guarda o elemento atual na pilha,
+// pois será pai do próximo elemento da recursão
+
+//se volta da recursão, então tira da pilha, pois o topo
+// é o elemento atual
+void imprimirTodosOsProgramas(No* raiz, Pilha* p) {
     if(raiz != NULL){
-        printf("(");
-        imprimirTodosOsProgramas(raiz->esq);
-        printf(")");
+        if(raiz->esq != NULL){
+            empilhar(p, raiz);
+            imprimirTodosOsProgramas(raiz->esq, p);
+        }
 
-        printf("%s [%s]", raiz->programa, raiz->pasta);
+        int i;
+        printf("C:/");
+        for(i = 0; i <  p->qtd; i++){
+           printf("%s/", p->pilha[i]->pasta);
+        }
 
-        printf("(");
-        imprimirTodosOsProgramas(raiz->dir);
-        printf(")");
+        printf("%s/%s.exe\n", raiz->pasta, raiz->programa);
+
+        if(raiz->dir != NULL){
+            empilhar(p, raiz);
+            imprimirTodosOsProgramas(raiz->dir, p);
+        }
+
+        //sobe um nível
+        desempilhar(p);
     }
 }
 
 int main() {
     int quantidadePresenteAoIniciar;
     scanf("%d", &quantidadePresenteAoIniciar);
-    //TODO - Leitura das sementes geradoras in-ordem e preordem e salvá-las como cópia de segurança inicial.
+
+    //Leitura das sementes geradoras in-ordem e preordem.
+    char* preordem [quantidadePresenteAoIniciar];
+    char* inordem [quantidadePresenteAoIniciar];
+
+    char nomePrograma [30];
+    for (int i = 0; i < quantidadePresenteAoIniciar; i++) {
+        scanf("%s", &nomePrograma);
+        preordem[i] = malloc(30 * sizeof(char));
+        strcpy(preordem[i], nomePrograma);
+    }
+
+    for (int i = 0; i < quantidadePresenteAoIniciar; i++) {
+        scanf("%s", &nomePrograma);
+        inordem[i] = malloc(30 * sizeof(char));
+        strcpy(inordem[i], nomePrograma);
+    }
+
     int operacao;
 
+    //Reconstrução da árvore binária a partir dos percursos dados.
+    No* raiz = reconstruir(preordem, inordem, quantidadePresenteAoIniciar, "raiz");
+
+    //Armazenamento dos percursos dados como cópia de segurança atual.
     Arvore arvore;
-    arvore.raiz = NULL;
+    arvore.raiz = raiz;
+    arvore.inordemCopiaDeSeguranca = inordem;
+    arvore.preordemCopiaDeSeguranca = preordem;
+    arvore.quantosNosCopiaDeSeguranca = quantidadePresenteAoIniciar;
+
+    Pilha p;
 
     while (scanf("%d", &operacao) != EOF) {
         switch (operacao) {
@@ -312,18 +514,20 @@ int main() {
                 break;
 
             case 5:
-                criarCopiasDeSeguranca();
+                criarCopiasDeSeguranca(&arvore);
                 break;
 
             case 6:
-                restaurarCopiaDeSeguranca();
+                restaurarCopiaDeSeguranca(&arvore);
                 break;
 
             case 7:
-                imprimirTodosOsProgramas(arvore.raiz); printf("\n");
+                p.qtd = 0;
+                p.limite = contarNos(arvore.raiz);
+                p.pilha = malloc(p.limite*sizeof(No*));
+
+                imprimirTodosOsProgramas(arvore.raiz, &p); printf("\n");
                 break;
-
         }
-
     }
 }
