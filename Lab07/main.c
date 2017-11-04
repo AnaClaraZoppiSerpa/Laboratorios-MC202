@@ -29,7 +29,6 @@ typedef struct Pilha {
     int limite;
 } Pilha;
 
-
 int empilhar(Pilha* p, No* no){
     if(p->qtd < p->limite){
         p->pilha[p->qtd] = no;
@@ -56,6 +55,16 @@ No* criarNo(char* nomePrograma, char* nomePasta) {
     strcpy(no->programa, nomePrograma);
     strcpy(no->pasta, nomePasta);
     return no;
+}
+
+//Percurso em pós-ordem para liberar a árvore. Visita-se as subárvores recursivamente, liberando cada um dos nós até que
+//as chamadas recursivas retornem para a raiz e a liberem.
+void liberarMemoriaArvore(No* raiz) {
+    if (raiz) {
+        liberarMemoriaArvore(raiz->esq);
+        liberarMemoriaArvore(raiz->dir);
+        free(raiz);
+    }
 }
 
 //A função retorna um ponteiro para a raiz da nova árvore.
@@ -445,7 +454,7 @@ void imprimirTodosOsProgramas(No* raiz, Pilha* p) {
         int i;
         printf("C:/");
         for(i = 0; i <  p->qtd; i++){
-           printf("%s/", p->pilha[i]->pasta);
+            printf("%s/", p->pilha[i]->pasta);
         }
 
         printf("%s/%s.exe\n", raiz->pasta, raiz->programa);
@@ -530,4 +539,5 @@ int main() {
                 break;
         }
     }
+    liberarMemoriaArvore(arvore.raiz);
 }
