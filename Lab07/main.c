@@ -386,21 +386,6 @@ void sementeInordem(No* raiz, char** inordem, int* indice) {
 }
 
 void otimizarCapacidadeDeResposta(Arvore* arvore) {
-    //De acordo com o algoritmo descrito no enunciado, precisamos da ordem crescente dos programas.
-    //Como a árvore binária construída é de busca, temos: subárvore esquerda < raiz < subárvore direita.
-    //Sendo assim, a ordem crescente é dada por um percurso in-ordem da árvore.
-    int quantos = contarNos(arvore->raiz);
-    char* inordem [quantos];
-
-    for (int i = 0; i < quantos; i++) {
-        inordem[i] = malloc(30 * sizeof(char));
-    }
-
-    int indice = 0;
-    sementeInordem(arvore->raiz, inordem, &indice);
-    printf("Vamos ver se realmente ta em ordem crescente:\n");
-    for (int i = 0; i < quantos; i++)
-        printf("%s, ", inordem[i]);
 }
 
 void sementePreordem(No* raiz, char** preordem, int* indice) {
