@@ -370,14 +370,37 @@ void testarVelocidadeDeResposta(Arvore arvore) {
     }
 }
 
-void otimizarCapacidadeDeResposta() {
-
-}
-
 int contarNos(No* raiz) {
     if (raiz == NULL)
         return 0;
     return 1 + contarNos(raiz->esq) + contarNos(raiz->dir);
+}
+
+void sementeInordem(No* raiz, char** inordem, int* indice) {
+    if (raiz) {
+        sementeInordem(raiz->esq, inordem, indice);
+        strcpy(inordem[*indice], raiz->programa);
+        *indice = *indice + 1;
+        sementeInordem(raiz->dir, inordem, indice);
+    }
+}
+
+void otimizarCapacidadeDeResposta(Arvore* arvore) {
+    //De acordo com o algoritmo descrito no enunciado, precisamos da ordem crescente dos programas.
+    //Como a árvore binária construída é de busca, temos: subárvore esquerda < raiz < subárvore direita.
+    //Sendo assim, a ordem crescente é dada por um percurso in-ordem da árvore.
+    int quantos = contarNos(arvore->raiz);
+    char* inordem [quantos];
+
+    for (int i = 0; i < quantos; i++) {
+        inordem[i] = malloc(30 * sizeof(char));
+    }
+
+    int indice = 0;
+    sementeInordem(arvore->raiz, inordem, &indice);
+    printf("Vamos ver se realmente ta em ordem crescente:\n");
+    for (int i = 0; i < quantos; i++)
+        printf("%s, ", inordem[i]);
 }
 
 void sementePreordem(No* raiz, char** preordem, int* indice) {
@@ -386,15 +409,6 @@ void sementePreordem(No* raiz, char** preordem, int* indice) {
         *indice = *indice + 1;
         sementePreordem(raiz->esq, preordem, indice);
         sementePreordem(raiz->dir, preordem, indice);
-    }
-}
-
-void sementeInordem(No* raiz, char** inordem, int* indice) {
-    if (raiz) {
-        sementeInordem(raiz->esq, inordem, indice);
-        strcpy(inordem[*indice], raiz->programa);
-        *indice = *indice + 1;
-        sementePreordem(raiz->dir, inordem, indice);
     }
 }
 
@@ -519,7 +533,7 @@ int main() {
                 break;
 
             case 4:
-                otimizarCapacidadeDeResposta();
+                otimizarCapacidadeDeResposta(&arvore);
                 break;
 
             case 5:
