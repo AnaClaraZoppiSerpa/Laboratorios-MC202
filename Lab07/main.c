@@ -30,6 +30,15 @@ typedef struct Pilha {
     int limite;
 } Pilha;
 
+//apenas pra teste, pode apagar dps
+void pre(No* arv) {
+    if (arv) {
+        printf("Programa %s Pasta %s, ", arv->programa, arv->pasta);
+        pre(arv->esq);
+        pre(arv->dir);
+    }
+}
+
 int empilhar(Pilha* p, No* no){
     if(p->qtd < p->limite){
         p->pilha[p->qtd] = no;
@@ -386,61 +395,56 @@ void sementeInordem(No* raiz, char** inordem, int* indice) {
     }
 }
 
-No* balancear(char** ordemCrescenteDosNos, int tamanho, char* nomePasta) {
-    if (tamanho == 0)
+No* balancear(No* vetorNos [], int indiceInicio, int indiceFim, char* nomePastaRaiz) {
+    if (indiceInicio <= indiceFim) {
+        int indiceMediana = floor((indiceInicio + indiceFim)/2);
+        No* raiz = vetorNos[indiceMediana];
+        strcpy(raiz->pasta, nomePastaRaiz);
+
+        char* pastaEsq = malloc(30 * sizeof(char));
+        strcpy(pastaEsq, raiz->programa);
+        strcat(pastaEsq, "_esq");
+
+        char* pastaDir = malloc(30 * sizeof(char));
+        strcpy(pastaDir, raiz->programa);
+        strcat(pastaDir, "_dir");
+
+        raiz->esq = balancear(vetorNos, indiceInicio, indiceMediana - 1, pastaEsq);
+        raiz->dir = balancear(vetorNos, indiceMediana + 1, indiceFim, pastaDir);
+        return raiz;
+    } else {
         return NULL;
-    if (tamanho == 1) {
-        No* novaRaiz = criarNo(ordemCrescenteDosNos[0], nomePasta);
-        return novaRaiz;
     }
-    float metade = (float) tamanho / 2;
-    int indiceMediana = floor(metade);
-    No* novaRaiz = criarNo(ordemCrescenteDosNos[indiceMediana], nomePasta);
-    //0 <= x < indiceMediana tem a parte esquerda.
-    char* esquerda [indiceMediana];
-    //indiceMediana + 1 <= x < tamanho tem a parte direita.
-    char* direita [tamanho - indiceMediana - 1];
-    int indiceParaNovoVetor = 0;
-    for (int x = 0; x < tamanho; x++) {
-        if (x >= 0 && x < indiceMediana) {
-            esquerda[indiceParaNovoVetor] = ordemCrescenteDosNos[x];
-            indiceParaNovoVetor++;
-        } else if (x >= indiceMediana + 1 && x < tamanho) {
-            direita[indiceParaNovoVetor] = ordemCrescenteDosNos[x];
-            indiceParaNovoVetor++;
-        } else if (x == indiceMediana) {
-            indiceParaNovoVetor = 0;
-        }
-    }
-    char* valorRaiz = ordemCrescenteDosNos[indiceMediana];
-    char* pastaEsq = malloc(30 * sizeof(char));
-    strcpy(pastaEsq, valorRaiz);
-    strcat(pastaEsq, "_esq");
-
-    char* pastaDir = malloc(30 * sizeof(char));
-    strcpy(pastaDir, valorRaiz);
-    strcat(pastaDir, "_dir");
-
-    novaRaiz->esq = balancear(esquerda, indiceMediana, pastaEsq);
-    novaRaiz->dir = balancear(direita, tamanho - indiceMediana - 1, pastaDir);
-    return novaRaiz;
 }
 
+void obterOrdemCrescente(No* raiz, No* vetorNos [], int* indice) {
+    if (raiz != NULL) {
+        obterOrdemCrescente(raiz->esq, vetorNos, indice);
+        vetorNos[*indice] = raiz;
+        *indice = *indice + 1;
+        obterOrdemCrescente(raiz->dir, vetorNos, indice);
+    }
+}
+
+//No* balancear(char* inordem [], int indiceInicio, int indiceFim, int tamanho) {
+//    if (tamanho == 0)
+//        return NULL;
+//    if (indiceInicio == indiceFim && tamanho == 1) {
+//        No* raiz = criarNo(inordem[indiceInicio], "pasta");
+//        return raiz;
+//    }
+//    int indiceMediana = (indiceInicio + indiceFim) / 2;
+//    No* raiz = criarNo(inordem[indiceMediana], "pasta");
+//    raiz->esq = balancear(inordem, indic)
+//    return raiz;
+//}
+
 void otimizarCapacidadeDeResposta(Arvore* arvore) {
-    //Como se trata de uma árvore binária de busca, para cada nó temos subárvore esquerda < nó < subárvore direita.
-    //Sendo assim, um percurso in-ordem nos dá uma ordem crescente dos elementos, a qual é necessária, de acordo com
-    //o enunciado, para aplicar o algoritmo de balanceamento.
     int quantos = contarNos(arvore->raiz);
-    char* ordemCrescente [quantos];
-
-    for (int i = 0; i < quantos; i++)
-        ordemCrescente[i] = malloc(30 * sizeof(char));
-
+    No* ordemCrescenteDosNos [quantos];
     int indice = 0;
-    sementeInordem(arvore->raiz, ordemCrescente, &indice);
-    No* raiz = balancear(ordemCrescente, quantos, "raiz");
-    arvore->raiz = raiz;
-
+    obterOrdemCrescente(arvore->raiz, ordemCrescenteDosNos, &indice);
+    arvore->raiz = balancear(ordemCrescenteDosNos, 0, quantos - 1, "raiz");
     printf("[OPTIMIZE] O sistema de acesso a programas foi otimizado\n");
 }
 
@@ -473,15 +477,6 @@ void criarCopiasDeSeguranca(Arvore* arvore) {
     arvore->quantosNosCopiaDeSeguranca = quantos;
 
     printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
-}
-
-//apenas pra teste, pode apagar dps
-void pre(No* arv) {
-    if (arv) {
-        printf("Programa %s Pasta %s, ", arv->programa, arv->pasta);
-        pre(arv->esq);
-        pre(arv->dir);
-    }
 }
 
 void restaurarCopiaDeSeguranca(Arvore* arvore) {
