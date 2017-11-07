@@ -533,16 +533,17 @@ int main() {
     char* inordem [quantidadePresenteAoIniciar];
 
     char nomePrograma [30];
-    for (int i = 0; i < quantidadePresenteAoIniciar; i++) {
-        scanf("%s", &nomePrograma);
-        preordem[i] = malloc(30 * sizeof(char));
-        strcpy(preordem[i], nomePrograma);
-    }
 
     for (int i = 0; i < quantidadePresenteAoIniciar; i++) {
         scanf("%s", &nomePrograma);
         inordem[i] = malloc(30 * sizeof(char));
         strcpy(inordem[i], nomePrograma);
+    }
+
+    for (int i = 0; i < quantidadePresenteAoIniciar; i++) {
+        scanf("%s", &nomePrograma);
+        preordem[i] = malloc(30 * sizeof(char));
+        strcpy(preordem[i], nomePrograma);
     }
 
     int operacao;
@@ -590,7 +591,8 @@ int main() {
                 p.limite = contarNos(arvore.raiz);
                 p.pilha = malloc(p.limite*sizeof(No*));
 
-                imprimirTodosOsProgramas(arvore.raiz, &p); printf("\n");
+                printf("[PATHS]\n");
+                imprimirTodosOsProgramas(arvore.raiz, &p);
                 break;
         }
     }
