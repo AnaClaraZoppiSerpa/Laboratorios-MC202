@@ -426,19 +426,6 @@ void obterOrdemCrescente(No* raiz, No* vetorNos [], int* indice) {
     }
 }
 
-//No* balancear(char* inordem [], int indiceInicio, int indiceFim, int tamanho) {
-//    if (tamanho == 0)
-//        return NULL;
-//    if (indiceInicio == indiceFim && tamanho == 1) {
-//        No* raiz = criarNo(inordem[indiceInicio], "pasta");
-//        return raiz;
-//    }
-//    int indiceMediana = (indiceInicio + indiceFim) / 2;
-//    No* raiz = criarNo(inordem[indiceMediana], "pasta");
-//    raiz->esq = balancear(inordem, indic)
-//    return raiz;
-//}
-
 void otimizarCapacidadeDeResposta(Arvore* arvore) {
     int quantos = contarNos(arvore->raiz);
     No* ordemCrescenteDosNos [quantos];
@@ -459,21 +446,17 @@ void sementePreordem(No* raiz, char** preordem, int* indice) {
 
 void criarCopiasDeSeguranca(Arvore* arvore) {
     int quantos = contarNos(arvore->raiz);
-    char* inordem [quantos];
-    char* preordem [quantos];
 
     for (int i = 0; i < quantos; i++) {
-        inordem[i] = malloc(30 * sizeof(char));
-        preordem[i] = malloc(30 * sizeof(char));
+        arvore->inordemCopiaDeSeguranca[i] = malloc(30 * sizeof(char));
+        arvore->preordemCopiaDeSeguranca[i] = malloc(30 * sizeof(char));
     }
 
     int indice = 0;
-    sementePreordem(arvore->raiz, preordem, &indice);
+    sementePreordem(arvore->raiz, arvore->preordemCopiaDeSeguranca, &indice);
     indice = 0;
-    sementeInordem(arvore->raiz, inordem, &indice);
+    sementeInordem(arvore->raiz, arvore->inordemCopiaDeSeguranca, &indice);
 
-    arvore->preordemCopiaDeSeguranca = preordem;
-    arvore->inordemCopiaDeSeguranca = inordem;
     arvore->quantosNosCopiaDeSeguranca = quantos;
 
     printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
