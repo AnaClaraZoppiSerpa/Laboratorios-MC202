@@ -214,7 +214,7 @@ void retiraNo(No* no, No* pai){
 
             //se tem dois filhos
             if(no->dir != NULL && no->esq != NULL){
-                //se tem os dois filhos, troca com a folha mais a direita da subarvore da direita
+                //se tem os dois filhos, troca com a folha mais a direita da subarvore da esquerda
                 //e remove essa folha
                 char nomeAux[30];
                 No* aux = no->esq;
@@ -260,19 +260,35 @@ void retiraNo(No* no, No* pai){
             free(no);
         } else {
             //se tem apenas um filho, faça pai apontar para o neto
+            //é necessário também alterar o nome da pasta do neto.
             if (no->esq == NULL && no->dir != NULL) { //tem apenas o filho direito
                 if (pai->dir == no) {
+                    char novaPasta [30];
+                    strcpy(novaPasta, pai->programa);
+                    strcat(novaPasta, "_dir");
+                    strcpy(no->dir->pasta, novaPasta);
                     pai->dir = no->dir;
                 } else {
+                    char novaPasta [30];
+                    strcpy(novaPasta, pai->programa);
+                    strcat(novaPasta, "_esq");
+                    strcpy(no->dir->pasta, novaPasta);
                     pai->esq = no->dir;
                 }
-
                 no = NULL;
                 free(no);
             } else if (no->dir == NULL && no->esq != NULL) { //tem apenas o filho esquerdo
                 if (pai->dir == no) {
+                    char novaPasta [30];
+                    strcpy(novaPasta, pai->programa);
+                    strcat(novaPasta, "_dir");
+                    strcpy(no->esq->pasta, novaPasta);
                     pai->dir = no->esq;
                 } else {
+                    char novaPasta [30];
+                    strcpy(novaPasta, pai->programa);
+                    strcat(novaPasta, "_esq");
+                    strcpy(no->esq->pasta, novaPasta);
                     pai->esq = no->esq;
                 }
 
@@ -280,7 +296,7 @@ void retiraNo(No* no, No* pai){
                 free(no);
             } else {
 
-                //se tem os dois filhos, troca com a folha mais a direita da subarvore da direita
+                //se tem os dois filhos, troca com a folha mais a direita da subarvore da esquerda
                 //e remove essa folha
                 char nomeAux[30];
                 No *aux = no->esq;
@@ -460,11 +476,32 @@ void criarCopiasDeSeguranca(Arvore* arvore) {
     arvore->quantosNosCopiaDeSeguranca = quantos;
 
     printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
+
+    //tirar depois
+    printf("Quantos nos tem a copia de seguranca: %d\n", arvore->quantosNosCopiaDeSeguranca);
+    printf("Preordem da copia de seguranca\n");
+    for (int i = 0; i < arvore->quantosNosCopiaDeSeguranca; i++)
+        printf("%s ", arvore->preordemCopiaDeSeguranca[i]);
+    printf("Inordem da copia de seguranca\n");
+    for (int i = 0; i < arvore->quantosNosCopiaDeSeguranca; i++)
+        printf("%s ", arvore->inordemCopiaDeSeguranca[i]);
+    printf("\n");
 }
 
 void restaurarCopiaDeSeguranca(Arvore* arvore) {
     No* novaRaiz = reconstruir(arvore->preordemCopiaDeSeguranca, arvore->inordemCopiaDeSeguranca, arvore->quantosNosCopiaDeSeguranca, "raiz");
     arvore->raiz = novaRaiz;
+
+    //tirar depois
+    printf("Quantos nos tem a copia de seguranca: %d\n", arvore->quantosNosCopiaDeSeguranca);
+    printf("Preordem da copia de seguranca\n");
+    for (int i = 0; i < arvore->quantosNosCopiaDeSeguranca; i++)
+        printf("%s ", arvore->preordemCopiaDeSeguranca[i]);
+    printf("Inordem da copia de seguranca\n");
+    for (int i = 0; i < arvore->quantosNosCopiaDeSeguranca; i++)
+        printf("%s ", arvore->inordemCopiaDeSeguranca[i]);
+    printf("\n");
+
     printf("[RESTORE] Sistema restaurado para a versao do backup\n");
 }
 
