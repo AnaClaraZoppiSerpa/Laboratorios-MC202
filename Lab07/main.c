@@ -230,9 +230,19 @@ void retiraNo(No* no, No* pai){
                 strcpy(no->programa, aux->programa);
                 strcpy(aux->programa, nomeAux);
 
-                strcpy(nomeAux, no->pasta);
+                /*strcpy(nomeAux, no->pasta);
                 strcpy(no->pasta, aux->pasta);
-                strcpy(aux->pasta, nomeAux);
+                strcpy(aux->pasta, nomeAux);*/
+
+                char pastaEsq [30];
+                char pastaDir [30];
+                strcpy(pastaDir, no->programa);
+                strcat(pastaDir, "_dir");
+                strcpy(pastaEsq, no->programa);
+                strcat(pastaEsq, "_esq");
+
+                strcpy(no->esq->pasta, pastaEsq);
+                strcpy(no->dir->pasta, pastaDir);
 
                 retiraNo(aux, pai);
             }
@@ -240,9 +250,11 @@ void retiraNo(No* no, No* pai){
 
                 //tem apenas o filho esquerdo
                 if(no->esq != NULL){
+                    strcpy(no->esq->pasta, "raiz");
                     no = no->esq;
                 }
                 else{ //tem apenas o filho direito
+                    strcpy(no->dir->pasta, "raiz");
                     no = no->dir;
                 }
             }
