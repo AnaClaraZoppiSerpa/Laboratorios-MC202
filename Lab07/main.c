@@ -30,15 +30,6 @@ typedef struct Pilha {
     int limite;
 } Pilha;
 
-//apenas pra teste, pode apagar dps
-void pre(No* arv) {
-    if (arv) {
-        printf("Programa %s Pasta %s, ", arv->programa, arv->pasta);
-        pre(arv->esq);
-        pre(arv->dir);
-    }
-}
-
 int empilhar(Pilha* p, No* no){
     if(p->qtd < p->limite){
         p->pilha[p->qtd] = no;
@@ -465,12 +456,7 @@ void otimizarCapacidadeDeResposta(Arvore* arvore) {
 
 void sementePreordem(No* raiz, char** preordem, int* indice) {
     if (raiz) {
-        //printf("Gerando semente preordem\n");
-        //printf("Raiz: %s\n", raiz->programa);
-        //printf("Indice no vetor preordem: %d\n", *indice);
-        //printf("O que ja tinha nessa posicao: %s\n", preordem[*indice]);
         strcpy(preordem[*indice], raiz->programa);
-        //printf("O que tem agora: %s\n", preordem[*indice]);
         *indice = *indice + 1;
         sementePreordem(raiz->esq, preordem, indice);
         sementePreordem(raiz->dir, preordem, indice);
@@ -500,37 +486,12 @@ void criarCopiasDeSeguranca(Arvore* arvore) {
 
     arvore->quantosNosCopiaDeSeguranca = quantos;
 
-    /*printf("Vamos ver como ficou a semente preordem\n");
-    for (int i = 0; i < quantos; i++)
-        printf("%s ", arvore->preordemCopiaDeSeguranca[i]);
-    printf("\n");*/
-
     printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
-
-    //tirar depois
-    /*printf("Quantos nos tem a copia de seguranca: %d\n", arvore->quantosNosCopiaDeSeguranca);
-    printf("Preordem da copia de seguranca\n");
-    for (int i = 0; i < arvore->quantosNosCopiaDeSeguranca; i++)
-        printf("%s ", arvore->preordemCopiaDeSeguranca[i]);
-    printf("Inordem da copia de seguranca\n");
-    for (int i = 0; i < arvore->quantosNosCopiaDeSeguranca; i++)
-        printf("%s ", arvore->inordemCopiaDeSeguranca[i]);
-    printf("\n");*/
 }
 
 void restaurarCopiaDeSeguranca(Arvore* arvore) {
     No* novaRaiz = reconstruir(arvore->preordemCopiaDeSeguranca, arvore->inordemCopiaDeSeguranca, arvore->quantosNosCopiaDeSeguranca, "raiz");
     arvore->raiz = novaRaiz;
-
-    //tirar depois
-    /*printf("Quantos nos tem a copia de seguranca: %d\n", arvore->quantosNosCopiaDeSeguranca);
-    printf("Preordem da copia de seguranca\n");
-    for (int i = 0; i < arvore->quantosNosCopiaDeSeguranca; i++)
-        printf("%s ", arvore->preordemCopiaDeSeguranca[i]);
-    printf("Inordem da copia de seguranca\n");
-    for (int i = 0; i < arvore->quantosNosCopiaDeSeguranca; i++)
-        printf("%s ", arvore->inordemCopiaDeSeguranca[i]);
-    printf("\n");*/
 
     printf("[RESTORE] Sistema restaurado para a versao do backup\n");
 }
