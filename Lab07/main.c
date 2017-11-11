@@ -23,24 +23,23 @@ typedef struct Arvore {
     int quantosNosCopiaDeSeguranca;
 } Arvore;
 
+//Essa pilha será usada na operação 7 - imprimir todos os programas.
 typedef struct Pilha {
     No** pilha;
     int qtd;
     int limite;
 } Pilha;
 
-int empilhar(Pilha* p, No* no){
-    if(p->qtd < p->limite){
+int empilhar(Pilha* p, No* no) {
+    if(p->qtd < p->limite) {
         p->pilha[p->qtd] = no;
         p->qtd++;
-
         return 1;
     }
-
     return 0;
 }
 
-No* desempilhar(Pilha* p){
+No* desempilhar(Pilha* p) {
     if(p->qtd == 0)
         return NULL;
 
@@ -57,8 +56,9 @@ No* criarNo(char* nomePrograma, char* nomePasta) {
     return no;
 }
 
-//Percurso em pós-ordem para liberar a árvore. Visita-se as subárvores recursivamente, liberando cada um dos nós até que
-//as chamadas recursivas retornem para a raiz e a liberem.
+//Percurso em pós-ordem para liberar a árvore.
+// Visita-se as subárvores recursivamente, liberando cada um dos nós até que
+//as chamadas recursivas "voltem" para a raiz e a liberem.
 void liberarMemoriaArvore(No* raiz) {
     if (raiz) {
         liberarMemoriaArvore(raiz->esq);
@@ -67,22 +67,24 @@ void liberarMemoriaArvore(No* raiz) {
     }
 }
 
-//A função retorna um ponteiro para a raiz da nova árvore.
+//A função retorna um ponteiro para a raiz da árvore criada a partir das sementes.
 No* reconstruir(char* preordem [], char* inordem [], int tamanho, char* nomePastaRaiz) {
-    //Dada a pré-ordem, seu primeiro nó é a raiz.
+    //Trata-se de uma árvore vazia, então a raiz dela será NULL.
     if (tamanho == 0) {
         return NULL;
     }
 
     char* valorRaiz = malloc(30 * sizeof(char));
+    //Dada a pré-ordem, seu primeiro nó é a raiz.
     strcpy(valorRaiz, preordem[0]);
 
     No* raiz = criarNo(valorRaiz, nomePastaRaiz);
+    //Trata-se de uma árvore com apenas um nó, sendo ele, portanto, a raiz.
     if (tamanho == 1) {
         return raiz;
     }
 
-    //Então nós procuramos esse valor na in-ordem, porque à esquerda vai estar a
+    //Caso não seja nenhum dos casos bases acima, procuramos a raiz na in-ordem, porque à esquerda vai estar a
     //subárvore esquerda e à direita vai estar a subárvore direita.
     int comprimentoSubarvoreEsquerda = 0, comprimentoSubarvoreDireita = 0;
     int indiceDaRaizNaInordem = 0;
@@ -127,7 +129,8 @@ No* reconstruir(char* preordem [], char* inordem [], int tamanho, char* nomePast
         indiceParaNovoVetor++;
     }
 
-    //De 0 até o índice da raiz, temos a in-ordem da subárvore esquerda. De índice da raiz + 1 até o fim, temos a in-ordem da subárvore direita.
+    //De 0 até o índice da raiz, temos a in-ordem da subárvore esquerda. De índice da raiz + 1 até o fim, temos a in-ordem
+    // da subárvore direita.
     for (int i = 0; i < indiceDaRaizNaInordem; i++) {
         inordemSubarvoreEsquerda[i] = malloc(30 * sizeof(char));
         strcpy(inordemSubarvoreEsquerda[i], inordem[i]);
@@ -146,31 +149,34 @@ No* reconstruir(char* preordem [], char* inordem [], int tamanho, char* nomePast
     char* pastaDir = malloc(30 * sizeof(char));
     strcpy(pastaDir, valorRaiz);
     strcat(pastaDir, "_dir");
+    //As subárvores esquerda e direita são reconstruídas recursivamente. No final, teremos a raiz da árvore inteira.
     raiz->esq = reconstruir(preordemSubarvoreEsquerda, inordemSubarvoreEsquerda, comprimentoSubarvoreEsquerda, pastaEsq);
     raiz->dir = reconstruir(preordemSubarvoreDireita, inordemSubarvoreDireita, comprimentoSubarvoreDireita, pastaDir);
     return raiz;
 }
 
-//sempre retorna a raiz
+//Essa função sempre retorna a raiz para a nova árvore.
 No* insereRec(No* raiz, No** novo){
-    if(raiz == NULL){
+    if(raiz == NULL){ //Se não há raiz, ou seja, a árvore está vazia, o novo nó será a nova raiz.
         return *novo;
     }
 
+    //Comparamos os programas. Se o programa a ser inserido é lexicograficamente menor que o que temos na raiz
+    //ele deve ficar à esquerda.
     if(strcmp((*novo)->programa, raiz->programa) < 0){
         raiz->esq = insereRec(raiz->esq, novo);
         if(raiz->esq == *novo){
+            //Adequamos o nomes da pasta caso o novo nó tenha sido colocado imediatamente à esquerda da raiz.
             strcpy(raiz->esq->pasta, raiz->programa);
             strcat(raiz->esq->pasta, "_esq");
         }
-    }else{
+    }else{ //Nesse caso, o programa a ser inserido é maior que o que temos na raiz e deve ficar à direita.
         raiz->dir = insereRec(raiz->dir, novo);
         if(raiz->dir == *novo){
             strcpy(raiz->dir->pasta, raiz->programa);
             strcat(raiz->dir->pasta, "_dir");
         }
     }
-
     return raiz;
 }
 
@@ -191,20 +197,17 @@ void instalarNovoPrograma(Arvore *arvore) {
 }
 
 void retiraNo(No* no, No* pai){
-
-    //retirar a raiz
+    //Se aquele nó não possui pai, significa que estamos removendo a raiz
     if(pai == NULL){
-
-        //só tem a raiz
+        //A raiz não tem filhos, então a árvore tem apenas um nó
         if(no->dir == NULL && no->esq == NULL){
             free(no);
             no = NULL;
         }
         else{
-
-            //se tem dois filhos
+            //A raiz possui dois filhos
             if(no->dir != NULL && no->esq != NULL){
-                //se tem os dois filhos, troca com a folha mais a direita da subarvore da esquerda
+                //Se tem os dois filhos, troca com a folha mais à direita da subárvore esquerda
                 //e remove essa folha
                 char nomeAux[30];
                 No* aux = no->esq;
@@ -215,15 +218,11 @@ void retiraNo(No* no, No* pai){
                     aux = aux->dir;
                 }
 
-                //troca a informação com o no mais a direita da subarvore da esquerda
+                //Troca a informação com o no mais a direita da subarvore da esquerda
                 strcpy(nomeAux, no->programa);
                 strcpy(no->programa, aux->programa);
                 strcpy(aux->programa, nomeAux);
-
-                /*strcpy(nomeAux, no->pasta);
-                strcpy(no->pasta, aux->pasta);
-                strcpy(aux->pasta, nomeAux);*/
-
+                //Atualiza o nome da pasta
                 char pastaEsq [30];
                 char pastaDir [30];
                 strcpy(pastaDir, no->programa);
@@ -236,8 +235,7 @@ void retiraNo(No* no, No* pai){
 
                 retiraNo(aux, pai);
             }
-            else{//tem apenas um filho
-
+            else{//É a raiz e tem apenas um filho
                 //tem apenas o filho esquerdo
                 if(no->esq != NULL){
                     strcpy(no->esq->pasta, "raiz");
@@ -297,7 +295,6 @@ void retiraNo(No* no, No* pai){
                 no = NULL;
                 free(no);
             } else {
-
                 //se tem os dois filhos, troca com a folha mais a direita da subarvore da esquerda
                 //e remove essa folha
                 char nomeAux[30];
@@ -335,7 +332,6 @@ No* removeRec(No* raiz, char* programa, int* removeu){
         retiraNo(raiz, NULL);
         *removeu = 1;
     }else {
-
         //se o programa a ser removido é o filho esquerdo ou direito, remove-o
         if (raiz->esq != NULL && strcmp(raiz->esq->programa, programa) == 0) {
             retiraNo(raiz->esq, raiz);
@@ -353,7 +349,6 @@ No* removeRec(No* raiz, char* programa, int* removeu){
             }
         }
     }
-
     return raiz;
 }
 
@@ -363,11 +358,9 @@ void desinstalarPrograma(Arvore* arvore) {
     scanf("%s", &programa);
 
     No* aux = removeRec(arvore->raiz, programa, &removeu);
-
-    //não encontrou o programa
     if(removeu){
         printf("[UNINSTALL] Programa %s.exe desinstalado com sucesso\n", programa);
-    }else{
+    }else{ //não encontrou o programa
         printf("[UNINSTALL] Nao foi encontrado no sistema nenhum programa com nome %s\n", programa);
     }
 }
@@ -413,6 +406,7 @@ void sementeInordem(No* raiz, char** inordem, int* indice) {
     }
 }
 
+//Encontramos a raiz a partir do índice no qual está a mediana e balanceamos recursivamente as subárvores.
 No* balancear(No* vetorNos [], int indiceInicio, int indiceFim, char* nomePastaRaiz) {
     if (indiceInicio <= indiceFim) {
         int indiceMediana = (indiceInicio + indiceFim)/2;
@@ -435,6 +429,8 @@ No* balancear(No* vetorNos [], int indiceInicio, int indiceFim, char* nomePastaR
     }
 }
 
+//O percurso in-ordem fornece a ordem crescente. Essa função faz um percurso in-ordem e guarda os próprios nós no vetor.
+//É usada para o balanceamento.
 void obterOrdemCrescente(No* raiz, No* vetorNos [], int* indice) {
     if (raiz != NULL) {
         obterOrdemCrescente(raiz->esq, vetorNos, indice);
@@ -462,13 +458,6 @@ void sementePreordem(No* raiz, char** preordem, int* indice) {
     }
 }
 
-void verpreordemseg(Arvore* arvore) {
-    printf("SEMENTE PREORDEM\n");
-    for (int i = 0; i < arvore->quantosNosCopiaDeSeguranca; i++)
-        printf("%s ", arvore->preordemCopiaDeSeguranca[i]);
-    printf("\n");
-}
-
 void criarCopiasDeSeguranca(Arvore* arvore) {
     int quantos = contarNos(arvore->raiz);
     arvore->inordemCopiaDeSeguranca = malloc(quantos * sizeof(char*));
@@ -488,6 +477,7 @@ void criarCopiasDeSeguranca(Arvore* arvore) {
     printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
 }
 
+//Para restaurar uma cópia de segurança, basta construir a árvore a partir das sementes de segurança.
 void restaurarCopiaDeSeguranca(Arvore* arvore) {
     No* novaRaiz = reconstruir(arvore->preordemCopiaDeSeguranca, arvore->inordemCopiaDeSeguranca, arvore->quantosNosCopiaDeSeguranca, "raiz");
     arvore->raiz = novaRaiz;
@@ -496,7 +486,7 @@ void restaurarCopiaDeSeguranca(Arvore* arvore) {
 }
 
 
-//nesse método utilizamos uma pilha para guardar todo o caminhp
+//nesse método utilizamos uma pilha para guardar todo o caminho
 //desde a raiz até o elemento proriamente dito
 
 // se desce um nível então guarda o elemento atual na pilha,
@@ -523,7 +513,6 @@ void imprimirTodosOsProgramas(No* raiz, Pilha* p) {
             empilhar(p, raiz);
             imprimirTodosOsProgramas(raiz->dir, p);
         }
-
         //sobe um nível
         desempilhar(p);
     }
@@ -598,9 +587,6 @@ int main() {
 
                 printf("[PATHS]\n");
                 imprimirTodosOsProgramas(arvore.raiz, &p);
-                break;
-            case 8:
-                verpreordemseg(&arvore);
                 break;
         }
     }
