@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 /*
 Laboratório 07
@@ -416,7 +415,7 @@ void sementeInordem(No* raiz, char** inordem, int* indice) {
 
 No* balancear(No* vetorNos [], int indiceInicio, int indiceFim, char* nomePastaRaiz) {
     if (indiceInicio <= indiceFim) {
-        int indiceMediana = floor((indiceInicio + indiceFim)/2);
+        int indiceMediana = (indiceInicio + indiceFim)/2;
         No* raiz = vetorNos[indiceMediana];
         strcpy(raiz->pasta, nomePastaRaiz);
 
