@@ -39,6 +39,17 @@ int empilhar(Pilha* p, No* no) {
     return 0;
 }
 
+char* obterPastaParaFilho(No* pai, char* tipo) {
+    if (pai != NULL) {
+        char* nome = malloc(30 * sizeof(char));
+        strcpy(nome, pai->programa);
+        strcat(nome, tipo);
+        return nome;
+    } else {
+        return "";
+    }
+}
+
 No* desempilhar(Pilha* p) {
     if(p->qtd == 0)
         return NULL;
@@ -142,16 +153,9 @@ No* reconstruir(char* preordem [], char* inordem [], int tamanho, char* nomePast
         indiceParaNovoVetor++;
     }
 
-    char* pastaEsq = malloc(30 * sizeof(char));
-    strcpy(pastaEsq, valorRaiz);
-    strcat(pastaEsq, "_esq");
-
-    char* pastaDir = malloc(30 * sizeof(char));
-    strcpy(pastaDir, valorRaiz);
-    strcat(pastaDir, "_dir");
     //As subárvores esquerda e direita são reconstruídas recursivamente. No final, teremos a raiz da árvore inteira.
-    raiz->esq = reconstruir(preordemSubarvoreEsquerda, inordemSubarvoreEsquerda, comprimentoSubarvoreEsquerda, pastaEsq);
-    raiz->dir = reconstruir(preordemSubarvoreDireita, inordemSubarvoreDireita, comprimentoSubarvoreDireita, pastaDir);
+    raiz->esq = reconstruir(preordemSubarvoreEsquerda, inordemSubarvoreEsquerda, comprimentoSubarvoreEsquerda, obterPastaParaFilho(raiz, "_esq"));
+    raiz->dir = reconstruir(preordemSubarvoreDireita, inordemSubarvoreDireita, comprimentoSubarvoreDireita, obterPastaParaFilho(raiz, "_dir"));
     return raiz;
 }
 
@@ -223,15 +227,8 @@ void retiraNo(No* no, No* pai){
                 strcpy(no->programa, aux->programa);
                 strcpy(aux->programa, nomeAux);
                 //Atualiza o nome da pasta
-                char pastaEsq [30];
-                char pastaDir [30];
-                strcpy(pastaDir, no->programa);
-                strcat(pastaDir, "_dir");
-                strcpy(pastaEsq, no->programa);
-                strcat(pastaEsq, "_esq");
-
-                strcpy(no->esq->pasta, pastaEsq);
-                strcpy(no->dir->pasta, pastaDir);
+                strcpy(no->esq->pasta, obterPastaParaFilho(no, "_esq"));
+                strcpy(no->dir->pasta, obterPastaParaFilho(no, "_dir"));
 
                 retiraNo(aux, pai);
             }
@@ -263,32 +260,20 @@ void retiraNo(No* no, No* pai){
             //é necessário também alterar o nome da pasta do neto.
             if (no->esq == NULL && no->dir != NULL) { //tem apenas o filho direito
                 if (pai->dir == no) {
-                    char novaPasta [30];
-                    strcpy(novaPasta, pai->programa);
-                    strcat(novaPasta, "_dir");
-                    strcpy(no->dir->pasta, novaPasta);
+                    strcpy(no->dir->pasta, obterPastaParaFilho(pai, "_dir"));
                     pai->dir = no->dir;
                 } else {
-                    char novaPasta [30];
-                    strcpy(novaPasta, pai->programa);
-                    strcat(novaPasta, "_esq");
-                    strcpy(no->dir->pasta, novaPasta);
+                    strcpy(no->dir->pasta, obterPastaParaFilho(pai, "_esq"));
                     pai->esq = no->dir;
                 }
                 no = NULL;
                 free(no);
             } else if (no->dir == NULL && no->esq != NULL) { //tem apenas o filho esquerdo
                 if (pai->dir == no) {
-                    char novaPasta [30];
-                    strcpy(novaPasta, pai->programa);
-                    strcat(novaPasta, "_dir");
-                    strcpy(no->esq->pasta, novaPasta);
+                    strcpy(no->esq->pasta, obterPastaParaFilho(pai, "_dir"));
                     pai->dir = no->esq;
                 } else {
-                    char novaPasta [30];
-                    strcpy(novaPasta, pai->programa);
-                    strcat(novaPasta, "_esq");
-                    strcpy(no->esq->pasta, novaPasta);
+                    strcpy(no->esq->pasta, obterPastaParaFilho(pai, "_esq"));
                     pai->esq = no->esq;
                 }
 
@@ -413,16 +398,8 @@ No* balancear(No* vetorNos [], int indiceInicio, int indiceFim, char* nomePastaR
         No* raiz = vetorNos[indiceMediana];
         strcpy(raiz->pasta, nomePastaRaiz);
 
-        char* pastaEsq = malloc(30 * sizeof(char));
-        strcpy(pastaEsq, raiz->programa);
-        strcat(pastaEsq, "_esq");
-
-        char* pastaDir = malloc(30 * sizeof(char));
-        strcpy(pastaDir, raiz->programa);
-        strcat(pastaDir, "_dir");
-
-        raiz->esq = balancear(vetorNos, indiceInicio, indiceMediana - 1, pastaEsq);
-        raiz->dir = balancear(vetorNos, indiceMediana + 1, indiceFim, pastaDir);
+        raiz->esq = balancear(vetorNos, indiceInicio, indiceMediana - 1, obterPastaParaFilho(raiz, "_esq"));
+        raiz->dir = balancear(vetorNos, indiceMediana + 1, indiceFim, obterPastaParaFilho(raiz, "_dir"));
         return raiz;
     } else {
         return NULL;
