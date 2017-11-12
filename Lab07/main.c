@@ -156,6 +156,7 @@ No* reconstruir(char* preordem [], char* inordem [], int tamanho, char* nomePast
     //As subárvores esquerda e direita são reconstruídas recursivamente. No final, teremos a raiz da árvore inteira.
     raiz->esq = reconstruir(preordemSubarvoreEsquerda, inordemSubarvoreEsquerda, comprimentoSubarvoreEsquerda, obterPastaParaFilho(raiz, "_esq"));
     raiz->dir = reconstruir(preordemSubarvoreDireita, inordemSubarvoreDireita, comprimentoSubarvoreDireita, obterPastaParaFilho(raiz, "_dir"));
+    free(valorRaiz);
     return raiz;
 }
 
@@ -196,7 +197,6 @@ void instalarNovoPrograma(Arvore *arvore) {
         strcpy(aux->pasta, "raiz");
         arvore->raiz = aux;
     }
-
     printf("[INSTALL] Programa %s.exe instalado com sucesso na pasta %s\n", novo->programa, novo->pasta);
 }
 
@@ -342,7 +342,7 @@ void desinstalarPrograma(Arvore* arvore) {
     int removeu = 0;
     scanf("%s", &programa);
 
-    No* aux = removeRec(arvore->raiz, programa, &removeu);
+    removeRec(arvore->raiz, programa, &removeu);
     if(removeu){
         printf("[UNINSTALL] Programa %s.exe desinstalado com sucesso\n", programa);
     }else{ //não encontrou o programa
@@ -564,8 +564,17 @@ int main() {
 
                 printf("[PATHS]\n");
                 imprimirTodosOsProgramas(arvore.raiz, &p);
+
+                free(p.pilha);
                 break;
         }
     }
     liberarMemoriaArvore(arvore.raiz);
+
+    for (int i = 0; i < arvore.quantosNosCopiaDeSeguranca; i++) {
+        free(arvore.preordemCopiaDeSeguranca[i]);
+        free(arvore.inordemCopiaDeSeguranca[i]);
+    }
+    free(arvore.preordemCopiaDeSeguranca);
+    free(arvore.inordemCopiaDeSeguranca);
 }
