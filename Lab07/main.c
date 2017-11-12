@@ -289,11 +289,9 @@ void retiraNo(No* no, No* pai){
                 strcpy(nomeAux, no->programa);
                 strcpy(no->programa, aux->programa);
                 strcpy(aux->programa, nomeAux);
-
-                strcpy(nomeAux, no->pasta);
-                strcpy(no->pasta, aux->pasta);
-                strcpy(aux->pasta, nomeAux);
-
+                //atualizar pasta dos filhos
+                strcpy(no->esq->pasta, obterPastaParaFilho(no, "_esq"));
+                strcpy(no->dir->pasta, obterPastaParaFilho(no, "_dir"));
                 retiraNo(aux, pai);
             }
         }
