@@ -562,6 +562,6 @@ int main() {
         free(arvore.preordemCopiaDeSeguranca[i]);
         free(arvore.inordemCopiaDeSeguranca[i]);
     }
-    free(arvore.preordemCopiaDeSeguranca);
-    free(arvore.inordemCopiaDeSeguranca);
+    //free(arvore.preordemCopiaDeSeguranca);
+    //free(arvore.inordemCopiaDeSeguranca);
 }
