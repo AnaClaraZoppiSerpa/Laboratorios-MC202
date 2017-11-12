@@ -183,7 +183,7 @@ No* insereRec(No* raiz, No** novo){
 void instalar(Arvore *arvore) {
     No* novo = malloc(sizeof(No));
 
-    scanf("%s", &novo->programa);
+    scanf("%s", novo->programa);
     novo->esq = NULL;
     novo->dir = NULL;
 
@@ -201,7 +201,6 @@ void retiraNo(No* no, No* pai){
         //A raiz não tem filhos, então a árvore tem apenas um nó
         if(no->dir == NULL && no->esq == NULL){
             free(no);
-            no = NULL;
         }
         else{
             //A raiz possui dois filhos
@@ -246,8 +245,6 @@ void retiraNo(No* no, No* pai){
             } else {
                 pai->esq = NULL;
             }
-
-            no = NULL;
             free(no);
         } else {
             //se tem apenas um filho, faça pai apontar para o neto
@@ -260,7 +257,6 @@ void retiraNo(No* no, No* pai){
                     strcpy(no->dir->pasta, obterPastaParaFilho(pai, "_esq"));
                     pai->esq = no->dir;
                 }
-                no = NULL;
                 free(no);
             } else if (no->dir == NULL && no->esq != NULL) { //tem apenas o filho esquerdo
                 if (pai->dir == no) {
@@ -271,7 +267,6 @@ void retiraNo(No* no, No* pai){
                     pai->esq = no->esq;
                 }
 
-                no = NULL;
                 free(no);
             } else {
                 //se tem os dois filhos, troca com a folha mais a direita da subarvore da esquerda
@@ -331,7 +326,7 @@ No* removeRec(No* raiz, char* programa, int* removeu){
 void desinstalar(Arvore* arvore) {
     char programa[30];
     int removeu = 0;
-    scanf("%s", &programa);
+    scanf("%s", programa);
 
     removeRec(arvore->raiz, programa, &removeu);
     if(removeu){
@@ -355,7 +350,7 @@ void testarVelocidade(Arvore arvore) {
     int tempoObtido, tempoEsperado;
     char programa[30];
 
-    scanf("%s", &programa);
+    scanf("%s", programa);
     scanf("%d", &tempoEsperado);
 
     tempoObtido = calculaAltura(arvore.raiz, programa);
@@ -492,13 +487,13 @@ int main() {
     char nomePrograma [30];
 
     for (int i = 0; i < quantidadePresenteAoIniciar; i++) {
-        scanf("%s", &nomePrograma);
+        scanf("%s", nomePrograma);
         inordem[i] = malloc(30 * sizeof(char));
         strcpy(inordem[i], nomePrograma);
     }
 
     for (int i = 0; i < quantidadePresenteAoIniciar; i++) {
-        scanf("%s", &nomePrograma);
+        scanf("%s", nomePrograma);
         preordem[i] = malloc(30 * sizeof(char));
         strcpy(preordem[i], nomePrograma);
     }
@@ -560,6 +555,4 @@ int main() {
         free(arvore.preordemCopiaDeSeguranca[i]);
         free(arvore.inordemCopiaDeSeguranca[i]);
     }
-    //free(arvore.preordemCopiaDeSeguranca);
-    //free(arvore.inordemCopiaDeSeguranca);
 }
