@@ -3,8 +3,6 @@
 #include <string.h>
 
 /*
-Laboratório 07
-MC202 - Estruturas de Dados
 Ana Clara Zoppi Serpa - RA 165880
 Gabriel Oliveira dos Santos - RA 197460
 */
@@ -23,7 +21,7 @@ typedef struct Arvore {
     int quantosNosCopiaDeSeguranca;
 } Arvore;
 
-//Essa pilha será usada na operação 7 - imprimir todos os programas.
+//Essa pilha será usada na operação 7 (imprimir todos os programas)
 typedef struct Pilha {
     No** pilha;
     int qtd;
@@ -68,7 +66,7 @@ No* criarNo(char* nomePrograma, char* nomePasta) {
 }
 
 //Percurso em pós-ordem para liberar a árvore.
-// Visita-se as subárvores recursivamente, liberando cada um dos nós até que
+// Visita subárvores recursivamente, liberando cada um dos nós até que
 //as chamadas recursivas "voltem" para a raiz e a liberem.
 void liberarMemoriaArvore(No* raiz) {
     if (raiz) {
@@ -84,7 +82,6 @@ No* reconstruir(char* preordem [], char* inordem [], int tamanho, char* nomePast
     if (tamanho == 0) {
         return NULL;
     }
-
     char* valorRaiz = malloc(30 * sizeof(char));
     //Dada a pré-ordem, seu primeiro nó é a raiz.
     strcpy(valorRaiz, preordem[0]);
@@ -94,7 +91,6 @@ No* reconstruir(char* preordem [], char* inordem [], int tamanho, char* nomePast
     if (tamanho == 1) {
         return raiz;
     }
-
     //Caso não seja nenhum dos casos bases acima, procuramos a raiz na in-ordem, porque à esquerda vai estar a
     //subárvore esquerda e à direita vai estar a subárvore direita.
     int comprimentoSubarvoreEsquerda = 0, comprimentoSubarvoreDireita = 0;
@@ -165,8 +161,7 @@ No* insereRec(No* raiz, No** novo){
     if(raiz == NULL){ //Se não há raiz, ou seja, a árvore está vazia, o novo nó será a nova raiz.
         return *novo;
     }
-
-    //Comparamos os programas. Se o programa a ser inserido é lexicograficamente menor que o que temos na raiz
+    //Comparamos os programas. Se o programa a ser inserido é menor que o que temos na raiz
     //ele deve ficar à esquerda.
     if(strcmp((*novo)->programa, raiz->programa) < 0){
         raiz->esq = insereRec(raiz->esq, novo);
@@ -185,7 +180,7 @@ No* insereRec(No* raiz, No** novo){
     return raiz;
 }
 
-void instalarNovoPrograma(Arvore *arvore) {
+void instalar(Arvore *arvore) {
     No* novo = malloc(sizeof(No));
 
     scanf("%s", &novo->programa);
@@ -221,7 +216,6 @@ void retiraNo(No* no, No* pai){
                     pai = aux;
                     aux = aux->dir;
                 }
-
                 //Troca a informação com o no mais a direita da subarvore da esquerda
                 strcpy(nomeAux, no->programa);
                 strcpy(no->programa, aux->programa);
@@ -312,7 +306,6 @@ No* removeRec(No* raiz, char* programa, int* removeu){
         *removeu = 0;
         return NULL;
     }
-
     if(strcmp(raiz->programa, programa) == 0){
         retiraNo(raiz, NULL);
         *removeu = 1;
@@ -337,7 +330,7 @@ No* removeRec(No* raiz, char* programa, int* removeu){
     return raiz;
 }
 
-void desinstalarPrograma(Arvore* arvore) {
+void desinstalar(Arvore* arvore) {
     char programa[30];
     int removeu = 0;
     scanf("%s", &programa);
@@ -360,7 +353,7 @@ int calculaAltura(No* raiz, char* programa){
     return 1+calculaAltura(raiz->dir, programa);
 }
 
-void testarVelocidadeDeResposta(Arvore arvore) {
+void testarVelocidade(Arvore arvore) {
     int tempoObtido, tempoEsperado;
     char programa[30];
 
@@ -417,7 +410,7 @@ void obterOrdemCrescente(No* raiz, No* vetorNos [], int* indice) {
     }
 }
 
-void otimizarCapacidadeDeResposta(Arvore* arvore) {
+void otimizar(Arvore* arvore) {
     int quantos = contarNos(arvore->raiz);
     No* ordemCrescenteDosNos [quantos];
     int indice = 0;
@@ -435,7 +428,7 @@ void sementePreordem(No* raiz, char** preordem, int* indice) {
     }
 }
 
-void criarCopiasDeSeguranca(Arvore* arvore) {
+void criarCopias(Arvore* arvore) {
     int quantos = contarNos(arvore->raiz);
     arvore->inordemCopiaDeSeguranca = malloc(quantos * sizeof(char*));
     arvore->preordemCopiaDeSeguranca = malloc(quantos * sizeof(char*));
@@ -455,7 +448,7 @@ void criarCopiasDeSeguranca(Arvore* arvore) {
 }
 
 //Para restaurar uma cópia de segurança, basta construir a árvore a partir das sementes de segurança.
-void restaurarCopiaDeSeguranca(Arvore* arvore) {
+void restaurar(Arvore* arvore) {
     No* novaRaiz = reconstruir(arvore->preordemCopiaDeSeguranca, arvore->inordemCopiaDeSeguranca, arvore->quantosNosCopiaDeSeguranca, "raiz");
     arvore->raiz = novaRaiz;
 
@@ -463,14 +456,9 @@ void restaurarCopiaDeSeguranca(Arvore* arvore) {
 }
 
 
-//nesse método utilizamos uma pilha para guardar todo o caminho
-//desde a raiz até o elemento proriamente dito
-
-// se desce um nível então guarda o elemento atual na pilha,
-// pois será pai do próximo elemento da recursão
-
-//se volta da recursão, então tira da pilha, pois o topo
-// é o elemento atual
+//Utilizamos uma pilha para guardar o caminho inteiro desde a raiz até o elemento proriamente dito
+// se desce um nível então guarda o elemento atual na pilha, pois será pai do próximo elemento da recursão
+//se volta da recursão, então tira da pilha, pois o topo é o elemento atual
 void imprimirTodosOsProgramas(No* raiz, Pilha* p) {
     if(raiz != NULL){
         if(raiz->esq != NULL){
@@ -534,27 +522,27 @@ int main() {
     while (scanf("%d", &operacao) != EOF) {
         switch (operacao) {
             case 1:
-                instalarNovoPrograma(&arvore);
+                instalar(&arvore);
                 break;
 
             case 2:
-                desinstalarPrograma(&arvore);
+                desinstalar(&arvore);
                 break;
 
             case 3:
-                testarVelocidadeDeResposta(arvore);
+                testarVelocidade(arvore);
                 break;
 
             case 4:
-                otimizarCapacidadeDeResposta(&arvore);
+                otimizar(&arvore);
                 break;
 
             case 5:
-                criarCopiasDeSeguranca(&arvore);
+                criarCopias(&arvore);
                 break;
 
             case 6:
-                restaurarCopiaDeSeguranca(&arvore);
+                restaurar(&arvore);
                 break;
 
             case 7:
@@ -570,7 +558,6 @@ int main() {
         }
     }
     liberarMemoriaArvore(arvore.raiz);
-
     for (int i = 0; i < arvore.quantosNosCopiaDeSeguranca; i++) {
         free(arvore.preordemCopiaDeSeguranca[i]);
         free(arvore.inordemCopiaDeSeguranca[i]);
