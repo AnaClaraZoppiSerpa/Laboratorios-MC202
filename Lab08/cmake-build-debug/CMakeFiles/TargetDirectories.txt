@@ -1,0 +1,3 @@
+C:/Users/alber/Documents/GitHub/Laboratorios-MC202/Lab08/cmake-build-debug/CMakeFiles/Lab08.dir
+C:/Users/alber/Documents/GitHub/Laboratorios-MC202/Lab08/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/alber/Documents/GitHub/Laboratorios-MC202/Lab08/cmake-build-debug/CMakeFiles/rebuild_cache.dir
