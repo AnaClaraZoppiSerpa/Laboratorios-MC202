@@ -11,19 +11,67 @@ typedef struct Ilha {
     char nome [30];
     int poderMilitar;
     int distancia;
-} Ilha ;
+} Ilha;
 
 typedef struct No {
     Ilha ilha;
     struct No* prox;
-} No ;
+} No;
 
 typedef struct Grafo {
     int quantasIlhasGreen;
     No** ilhasGreen;
     No* vizinhosRed;
     No* vizinhosBlue;
-} Grafo ;
+} Grafo;
+
+//Heap binário de mínimo para usar no algoritmo de Dijkstra.
+typedef struct Item {
+    Ilha vertice;
+    int prioridade;
+} Item;
+
+typedef struct Heap {
+    Item* vetor;
+    int tamanhoAtual;
+    int tamanhoMaximo;
+} Heap;
+
+void inicializarHeap(Heap* heap, int tamanhoMaximo) {
+    heap->tamanhoMaximo = tamanhoMaximo;
+    heap->tamanhoAtual = 0;
+    heap->vetor = malloc(tamanhoMaximo * sizeof(Item));
+}
+
+void inserirNoHeap(Heap* heap, Ilha ilha, int prioridade) {
+    if (heap->tamanhoAtual < heap->tamanhoMaximo) {
+        Item novo;
+        novo.vertice = ilha;
+        novo.prioridade = prioridade;
+        heap->vetor[heap->tamanhoAtual] = novo;
+        heap->tamanhoAtual++;
+    }
+}
+
+void mudarPrioridade(Heap* heap, char nomeIlha [30], int novaPrioridade) {
+    for (int i = 0; i < heap->tamanhoAtual; i++) {
+        if (strcmp(heap->vetor[i].vertice.nome, nomeIlha)==0) {
+            heap->vetor[i].prioridade = novaPrioridade;
+            break;
+        }
+    }
+}
+
+int vazio(Heap* heap) {
+    return heap->tamanhoAtual == 0;
+}
+
+void extrairMinimo(Heap* heap) {
+}
+
+void liberarMemoriaHeap(Heap* heap) {
+    //TODO
+}
 
 void liberarMemoria(Grafo* grafo){
     //TODO
@@ -36,6 +84,24 @@ int indiceNoVetorDeListas(Grafo g, char nomeIlha [30]) {
 
     return -1;
 }
+
+////Essa função retorna o custo caso as ilhas sejam vizinhas e 0 caso não sejam vizinhas.
+//int vizinhas(Grafo g, char ilha1 [30], char ilha2 [30]) {
+//    No* atual = NULL;
+//    if (strcmp(ilha1, "Red")==0) {
+//        atual = g.vizinhosRed;
+//    } else if (strcmp(ilha1, "Blue")==0) {
+//        atual = g.vizinhosBlue;
+//    } else {
+//        atual = g.ilhasGreen[indiceNoVetorDeListas(g, ilha1)]->prox;
+//    }
+//    while (atual != NULL) {
+//        if (strcmp(atual->ilha.nome, ilha2)==0)
+//            return atual->ilha.poderMilitar + atual->ilha.distancia;
+//        atual = atual->prox;
+//    }
+//    return 0;
+//}
 
 No* inserirNaLista(No* lista, Ilha nova) {
     No* novo = malloc(sizeof(No));
@@ -141,7 +207,9 @@ int main() {
     printf("Leu tudo\n");
     for (int i = 0; i < grafo.quantasIlhasGreen; i++) {
         printf("%s: ", grafo.ilhasGreen[i]->ilha.nome);
-        //Determinar situação
+        //Achar o custo mínimo para o império Red conquistar a ilha i.
+        //Achar o custo mínimo para o império Blue conquistar a ilha i.
+        //Comparar esses custos de acordo com as regras e exibir resultado.
         printf("\n");
     }
 }
