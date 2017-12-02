@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 typedef struct Ilha {
     char nome [30];
@@ -20,9 +21,7 @@ typedef struct No {
 
 typedef struct Grafo {
     int quantasIlhasGreen;
-    No** ilhasGreen;
-    No* vizinhosRed;
-    No* vizinhosBlue;
+    No** ilhas;
 } Grafo;
 
 //Heap binário de mínimo para usar no algoritmo de Dijkstra.
@@ -36,6 +35,13 @@ typedef struct Heap {
     int tamanhoAtual;
     int tamanhoMaximo;
 } Heap;
+
+//Estrutura para guardar a árvore de caminhos mínimos
+typedef struct Relacao {
+    //Exemplo: o G1 é pai do G2.
+    char pai [30]; //G1
+    char filho [30]; //G2
+} Relacao;
 
 void inicializarHeap(Heap* heap, int tamanhoMaximo) {
     heap->tamanhoMaximo = tamanhoMaximo;
@@ -92,18 +98,33 @@ Item extrairMinimo(Heap* heap) {
     return aux;
 }
 
-int pesoAresta(Ilha i) {
-    return i.poderMilitar + i.distancia;
+void diminuirPrioridade(Heap* heap, Ilha ilha, int novaPrioridade) {
+    int i;
+    for (i = 0; i < heap->tamanhoAtual; i++) {
+        if (strcmp(heap->vetor[i].vertice.nome, ilha.nome)==0) {
+            heap->vetor[i].prioridade = novaPrioridade;
+            break;
+        }
+    }
+    subirNoHeap(heap, i);
 }
 
-int testeHeap(Grafo g, int inicio) {
-    Heap heap;
-    for (int i = 0; i < g.quantasIlhasGreen; i++) {
-        inserirNoHeap(&heap, g.ilhasGreen[i]->ilha, pesoAresta(g.ilhasGreen[i]->ilha));
-    }
+int encontrarPrioridade(Heap heap, Ilha ilha) {
     for (int i = 0; i < heap.tamanhoAtual; i++) {
-        printf("Ilha %s, prioridade %d", heap.vetor[i].vertice.nome, heap.vetor[i].prioridade);
+        if (strcmp(heap.vetor[i].vertice.nome, ilha.nome)==0) {
+            return heap.vetor[i].prioridade;
+        }
     }
+}
+
+void imprimirHeap(Heap heap) {
+    for (int i = 0; i < heap.tamanhoAtual; i++) {
+        printf("Ilha %s, prioridade %d\n", heap.vetor[i].vertice.nome, heap.vetor[i].prioridade);
+    }
+}
+
+int pesoAresta(Ilha i) {
+    return i.poderMilitar + i.distancia;
 }
 
 void liberarMemoriaHeap(Heap* heap) {
@@ -115,8 +136,8 @@ void liberarMemoria(Grafo* grafo){
 }
 
 int indiceNoVetorDeListas(Grafo g, char nomeIlha [30]) {
-    for (int i = 0; i < g.quantasIlhasGreen; i++)
-        if (strcmp(g.ilhasGreen[i]->ilha.nome, nomeIlha) == 0)
+    for (int i = 0; i < g.quantasIlhasGreen + 2; i++)
+        if (strcmp(g.ilhas[i]->ilha.nome, nomeIlha) == 0)
             return i;
 
     return -1;
@@ -137,17 +158,28 @@ void imprimirLista(No* lista) {
     }
 }
 
-void imprimirGrafo(Grafo g) {
-    for (int i = 0; i < g.quantasIlhasGreen; i++) {
-        printf("%d: ", i);
-        imprimirLista(g.ilhasGreen[i]);
-        printf("\n");
+void dijkstra(Grafo g, Ilha inicio) {
+    Heap heap;
+    inicializarHeap(&heap, g.quantasIlhasGreen + 2);
+
+    for (int i = 0; i < g.quantasIlhasGreen + 2; i++) {
+        inserirNoHeap(&heap, g.ilhas[i]->ilha, INT_MAX);
     }
-    printf("Lista Blue: ");
-    imprimirLista(g.vizinhosBlue);
-    printf("\nLista Red:");
-    imprimirLista(g.vizinhosRed);
-    printf("\n");
+    inserirNoHeap(&heap, inicio, 0);
+    while (!vazio(&heap)) {
+        Item minimo = extrairMinimo(&heap);
+        No* vizinho = g.ilhas[indiceNoVetorDeListas(g, minimo.vertice.nome)]->prox;
+
+        if (minimo.prioridade != INT_MAX) {
+            while (vizinho != NULL) {
+                if (minimo.prioridade + pesoAresta(vizinho->ilha) < encontrarPrioridade(heap, vizinho->ilha)) {
+                    //atualizar pai e tals
+                    diminuirPrioridade(&heap, vizinho->ilha, minimo.prioridade + pesoAresta(vizinho->ilha));
+                }
+                vizinho = vizinho->prox;
+            }
+        }
+    }
 }
 
 int main() {
@@ -159,18 +191,31 @@ int main() {
 
     Grafo grafo;
     grafo.quantasIlhasGreen = quantasIlhasGreen;
-    grafo.ilhasGreen = malloc(quantasIlhasGreen * sizeof(No*));
+    grafo.ilhas = malloc((quantasIlhasGreen + 2) * sizeof(No*));
 
     for (int i = 0; i < quantasIlhasGreen; i++) {
-        grafo.ilhasGreen[i] = NULL;
+        grafo.ilhas[i] = NULL;
 
         Ilha ilha;
         scanf("%s", &ilha.nome);
         scanf("%d", &ilha.poderMilitar);
         ilha.distancia = 0;
 
-        grafo.ilhasGreen[i] = inserirNaLista(grafo.ilhasGreen[i], ilha);
+        grafo.ilhas[i] = inserirNaLista(grafo.ilhas[i], ilha);
     }
+
+    Ilha red;
+    strcpy(red.nome, "Red");
+    red.distancia = 0;
+    red.poderMilitar = 0;
+
+    Ilha blue;
+    strcpy(blue.nome, "Blue");
+    blue.distancia = 0;
+    blue.poderMilitar = 0;
+
+    grafo.ilhas[quantasIlhasGreen] = inserirNaLista(grafo.ilhas[quantasIlhasGreen], red);
+    grafo.ilhas[quantasIlhasGreen + 1] = inserirNaLista(grafo.ilhas[quantasIlhasGreen + 1], blue);
 
     char ilha1 [30];
     char ilha2 [30];
@@ -185,20 +230,12 @@ int main() {
         i2.distancia = distancia;
         i2.poderMilitar = 0;
 
-        if (indiceIlha2 != -1) {
-            i2.poderMilitar = grafo.ilhasGreen[indiceIlha2]->ilha.poderMilitar;
-        }
+        i2.poderMilitar = grafo.ilhas[indiceIlha2]->ilha.poderMilitar;
 
-        if (strcmp(ilha1, "Red")==0) {
-            grafo.vizinhosRed = inserirNaLista(grafo.vizinhosRed, i2);
-        } else if (strcmp(ilha1, "Blue")==0) {
-            grafo.vizinhosBlue = inserirNaLista(grafo.vizinhosBlue, i2);
-        } else {
-            //O primeiro nó de cada lista do vetor "ilhasGreen" é a ilha que possui os vizinhos.
-            //Por isso, inserimos sempre após esse nó, ou seja, em seu próximo.
-            //Teremos algo como: G1 (ilha que tem os vizinhos) -> G2 (ilha vizinha) -> G3 (outra ilha vizinha).
-            grafo.ilhasGreen[indiceIlha1]->prox = inserirNaLista(grafo.ilhasGreen[indiceIlha1]->prox, i2);
-        }
+        //O primeiro nó de cada lista do vetor "ilhasGreen" é a ilha que possui os vizinhos.
+        //Por isso, inserimos sempre após esse nó, ou seja, em seu próximo.
+        //Teremos algo como: G1 (ilha que tem os vizinhos) -> G2 (ilha vizinha) -> G3 (outra ilha vizinha).
+        grafo.ilhas[indiceIlha1]->prox = inserirNaLista(grafo.ilhas[indiceIlha1]->prox, i2);
 
         //Colocamos na lista de vizinhos da ilha 2 a ilha 1.
         Ilha i1;
@@ -206,26 +243,20 @@ int main() {
         i1.distancia = distancia;
         i1.poderMilitar = 0;
 
-        if (indiceIlha1 != -1) {
-            i1.poderMilitar = grafo.ilhasGreen[indiceIlha1]->ilha.poderMilitar;
-        }
+        i1.poderMilitar = grafo.ilhas[indiceIlha1]->ilha.poderMilitar;
 
-        if (strcmp(ilha2, "Red")==0) {
-            grafo.vizinhosRed = inserirNaLista(grafo.vizinhosRed, i1);
-        } else if (strcmp(ilha2, "Blue")==0) {
-            grafo.vizinhosBlue = inserirNaLista(grafo.vizinhosBlue, i1);
-        } else {
-            //Como antes, o primeiro nó de cada lista do vetor de ilhas do império Green é a ilha que possui
-            //os vizinhos que se seguirão na lista.
-            //Assim, para não perder esse informação, a inserção ocorre sempre no segundo nó da lista.
-            grafo.ilhasGreen[indiceIlha2]->prox = inserirNaLista(grafo.ilhasGreen[indiceIlha2]->prox, i1);
-        }
+        //Como antes, o primeiro nó de cada lista do vetor de ilhas do império Green é a ilha que possui
+        //os vizinhos que se seguirão na lista.
+        //Assim, para não perder esse informação, a inserção ocorre sempre no segundo nó da lista.
+        grafo.ilhas[indiceIlha2]->prox = inserirNaLista(grafo.ilhas[indiceIlha2]->prox, i1);
+
     }
     //Todas as informações foram lidas e o grafo está com seus vértices e arestas.
     //Agora resta determinar a situação de cada ilha do império Green e imprimir.
     printf("Leu tudo\n");
-    for (int i = 0; i < grafo.quantasIlhasGreen; i++) {
-        printf("%s: ", grafo.ilhasGreen[i]->ilha.nome);
+
+    for (int i = 0; i < grafo.quantasIlhasGreen + 2; i++) {
+        printf("%s: ", grafo.ilhas[i]->ilha.nome);
         //Achar o custo mínimo para o império Red conquistar a ilha i.
         //Achar o custo mínimo para o império Blue conquistar a ilha i.
         //Comparar esses custos de acordo com as regras e exibir resultado.
