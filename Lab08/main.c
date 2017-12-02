@@ -43,6 +43,16 @@ void inicializarHeap(Heap* heap, int tamanhoMaximo) {
     heap->vetor = malloc(tamanhoMaximo * sizeof(Item));
 }
 
+void subirNoHeap(Heap* heap, int posicao) {
+    int pai = (posicao - 1) / 2;
+    if (heap->vetor[pai].prioridade > heap->vetor[posicao].prioridade) {
+        Item aux = heap->vetor[pai];
+        heap->vetor[pai] = heap->vetor[posicao];
+        heap->vetor[posicao] = aux;
+        subirNoHeap(heap, pai);
+    }
+}
+
 void inserirNoHeap(Heap* heap, Ilha ilha, int prioridade) {
     if (heap->tamanhoAtual < heap->tamanhoMaximo) {
         Item novo;
@@ -50,15 +60,7 @@ void inserirNoHeap(Heap* heap, Ilha ilha, int prioridade) {
         novo.prioridade = prioridade;
         heap->vetor[heap->tamanhoAtual] = novo;
         heap->tamanhoAtual++;
-    }
-}
-
-void mudarPrioridade(Heap* heap, char nomeIlha [30], int novaPrioridade) {
-    for (int i = 0; i < heap->tamanhoAtual; i++) {
-        if (strcmp(heap->vetor[i].vertice.nome, nomeIlha)==0) {
-            heap->vetor[i].prioridade = novaPrioridade;
-            break;
-        }
+        subirNoHeap(heap, heap->tamanhoAtual-1);
     }
 }
 
@@ -66,7 +68,42 @@ int vazio(Heap* heap) {
     return heap->tamanhoAtual == 0;
 }
 
-void extrairMinimo(Heap* heap) {
+void descerNoHeap(Heap* heap, int posicao) {
+    int filho = 2 * posicao + 1;
+    if (filho < heap->tamanhoAtual) {
+        if (filho < heap->tamanhoAtual - 1 && heap->vetor[filho].prioridade > heap->vetor[filho + 1].prioridade)
+            filho++;
+        if (heap->vetor[posicao].prioridade > heap->vetor[filho].prioridade) {
+            Item aux = heap->vetor[posicao];
+            heap->vetor[posicao] = heap->vetor[filho];
+            heap->vetor[filho] = aux;
+            descerNoHeap(heap, filho);
+        }
+    }
+}
+
+Item extrairMinimo(Heap* heap) {
+    Item aux = heap->vetor[0];
+    heap->vetor[0] = heap->vetor[heap->tamanhoAtual - 1];
+    heap->vetor[heap->tamanhoAtual - 1] = aux;
+    aux = heap->vetor[heap->tamanhoAtual - 1];
+    heap->tamanhoAtual--;
+    descerNoHeap(heap, 0);
+    return aux;
+}
+
+int pesoAresta(Ilha i) {
+    return i.poderMilitar + i.distancia;
+}
+
+int testeHeap(Grafo g, int inicio) {
+    Heap heap;
+    for (int i = 0; i < g.quantasIlhasGreen; i++) {
+        inserirNoHeap(&heap, g.ilhasGreen[i]->ilha, pesoAresta(g.ilhasGreen[i]->ilha));
+    }
+    for (int i = 0; i < heap.tamanhoAtual; i++) {
+        printf("Ilha %s, prioridade %d", heap.vetor[i].vertice.nome, heap.vetor[i].prioridade);
+    }
 }
 
 void liberarMemoriaHeap(Heap* heap) {
@@ -84,24 +121,6 @@ int indiceNoVetorDeListas(Grafo g, char nomeIlha [30]) {
 
     return -1;
 }
-
-////Essa função retorna o custo caso as ilhas sejam vizinhas e 0 caso não sejam vizinhas.
-//int vizinhas(Grafo g, char ilha1 [30], char ilha2 [30]) {
-//    No* atual = NULL;
-//    if (strcmp(ilha1, "Red")==0) {
-//        atual = g.vizinhosRed;
-//    } else if (strcmp(ilha1, "Blue")==0) {
-//        atual = g.vizinhosBlue;
-//    } else {
-//        atual = g.ilhasGreen[indiceNoVetorDeListas(g, ilha1)]->prox;
-//    }
-//    while (atual != NULL) {
-//        if (strcmp(atual->ilha.nome, ilha2)==0)
-//            return atual->ilha.poderMilitar + atual->ilha.distancia;
-//        atual = atual->prox;
-//    }
-//    return 0;
-//}
 
 No* inserirNaLista(No* lista, Ilha nova) {
     No* novo = malloc(sizeof(No));
