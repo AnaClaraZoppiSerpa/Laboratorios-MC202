@@ -1,7 +1,7 @@
 /*
  * Laboratório 08 - MC202
  * Ana Clara Zoppi Serpa - RA 165880
- * Gabriel Oliveira dos Santos - RA */
+ * Gabriel Oliveira dos Santos - RA 197460*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +14,7 @@ typedef struct Ilha {
     int distancia;
 } Ilha;
 
+//Nosso grafo será implementado com Listas de Adjacência.
 typedef struct No {
     Ilha ilha;
     struct No* prox;
@@ -21,7 +22,7 @@ typedef struct No {
 
 typedef struct Grafo {
     int quantasIlhasGreen;
-    No** ilhas;
+    No** ilhas; //Vetor de listas para guardar os vizinhos de cada vértice do grafo.
 } Grafo;
 
 //Heap binário de mínimo para usar no algoritmo de Dijkstra.
@@ -36,7 +37,7 @@ typedef struct Heap {
     int tamanhoMaximo;
 } Heap;
 
-//Estrutura para guardar a árvore de caminhos mínimos
+//Estrutura para guardar a árvore de caminhos mínimos e o custo para chegar do vértice inicial ao vértice em questão.
 typedef struct Informacao {
     int pai;
     int custoTotal;
@@ -48,6 +49,11 @@ void inicializarHeap(Heap* heap, int tamanhoMaximo) {
     heap->vetor = malloc(tamanhoMaximo * sizeof(Item));
 }
 
+//Função para reorganizar o heap quando necessário e manter suas propriedades.
+//O pai é sempre menor que os filhos (heap de mínimo).
+//O filho esquerdo de um elemento em i está em 2i + 1.
+//O filho direito, em 2i + 2.
+//O pai, em (i-1)/2.
 void subirNoHeap(Heap* heap, int posicao) {
     int pai = (posicao - 1) / 2;
     if (heap->vetor[pai].prioridade > heap->vetor[posicao].prioridade) {
@@ -73,6 +79,7 @@ int vazio(Heap* heap) {
     return heap->tamanhoAtual == 0;
 }
 
+//Novamente uma função para reorganizar o heap e manter suas propriedades.
 void descerNoHeap(Heap* heap, int posicao) {
     int filho = 2 * posicao + 1;
     if (filho < heap->tamanhoAtual) {
@@ -117,12 +124,6 @@ int encontrarPrioridade(Heap heap, Ilha ilha) {
     return -1;
 }
 
-void imprimirHeap(Heap heap) {
-    for (int i = 0; i < heap.tamanhoAtual; i++) {
-        printf("Ilha %s, prioridade %d\n", heap.vetor[i].vertice.nome, heap.vetor[i].prioridade);
-    }
-}
-
 int pesoAresta(Ilha i) {
     return i.poderMilitar + i.distancia;
 }
@@ -148,6 +149,7 @@ void liberarMemoriaGrafo(Grafo* grafo){
     grafo->quantasIlhasGreen = 0;
 }
 
+//Função auxiliar para encontrar o índice de uma ilha na lista de adjacências do grafo.
 int indiceNoVetorDeListas(Grafo g, char nomeIlha [30]) {
     for (int i = 0; i < g.quantasIlhasGreen + 2; i++)
         if (strcmp(g.ilhas[i]->ilha.nome, nomeIlha) == 0)
@@ -163,14 +165,6 @@ No* inserirNaLista(No* lista, Ilha nova) {
     return novo;
 }
 
-void imprimirLista(No* lista) {
-    No* atual = lista;
-    while (atual != NULL) {
-        printf("%s, ", atual->ilha.nome);
-        atual = atual->prox;
-    }
-}
-
 Informacao* dijkstra(Grafo g, Ilha inicio) {
     Heap heap;
     inicializarHeap(&heap, g.quantasIlhasGreen + 2);
@@ -178,20 +172,33 @@ Informacao* dijkstra(Grafo g, Ilha inicio) {
     Informacao* pai = malloc((g.quantasIlhasGreen + 2) * sizeof(Informacao));
 
     for (int i = 0; i < g.quantasIlhasGreen + 2; i++) {
+        //Inicialmente não sabemos quem é o "pai" de cada vértice e representamos isso com -1.
         pai[i].pai = -1;
+        //Inicialmente o custo é "infinito" e, caso não exista caminho de um império até uma ilha, esse custo se mantem
+        //"infinito". Isso facilita a etapa de comparação de custos realizada mais adiante.
         pai[i].custoTotal = INT_MAX;
+        //Colocamos todos os vértices no heap de mínimo.
         inserirNoHeap(&heap, g.ilhas[i]->ilha, INT_MAX);
     }
+    //Diminuindo a prioridade do vértice inicial, ele se tornará o mínimo do heap.
     diminuirPrioridade(&heap, inicio, 0);
+    //O pai do vértice inicial é ele mesmo.
     pai[indiceNoVetorDeListas(g, inicio.nome)].pai = indiceNoVetorDeListas(g, inicio.nome);
+    //O custo total para chegar do inicial até o inicial é 0.
     pai[indiceNoVetorDeListas(g, inicio.nome)].custoTotal = 0;
 
     while (!vazio(&heap)) {
         Item minimo = extrairMinimo(&heap);
+        //Como o primeiro nó de cada lista é o vértice cujos vizinhos serão apresentados na lista, o primeiro vizinho é
+        //o segundo nó da lista.
         No* vizinho = g.ilhas[indiceNoVetorDeListas(g, minimo.vertice.nome)]->prox;
 
+        //Vértice já visitado, afinal, sua prioridade foi atualizada e não é mais INT_MAX.
         if (minimo.prioridade != INT_MAX) {
+            //Verificamos os vértices adjacentes.
             while (vizinho != NULL) {
+                //Se o custo é minimizado, atualizamos o pai e o custo total na árvore de caminhos mínimos, assim como a
+                //prioridade no heap.
                 if (minimo.prioridade + pesoAresta(vizinho->ilha) < encontrarPrioridade(heap, vizinho->ilha)) {
                     //atualizar pai e tals
                     pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)].pai = indiceNoVetorDeListas(g, minimo.vertice.nome);
@@ -216,8 +223,10 @@ int main() {
 
     Grafo grafo;
     grafo.quantasIlhasGreen = quantasIlhasGreen;
+    //Teremos, além das listas para as ilhas de Green, listas para as ilhas de Blue e Red, guardando seus vizinhos.
     grafo.ilhas = malloc((quantasIlhasGreen + 2) * sizeof(No*));
 
+    //Leitura e inserção das ilhas do império Green no grafo.
     for (int i = 0; i < quantasIlhasGreen; i++) {
         grafo.ilhas[i] = NULL;
 
@@ -228,6 +237,7 @@ int main() {
 
         grafo.ilhas[i] = inserirNaLista(grafo.ilhas[i], ilha);
     }
+    //Inserção do porto do império Red e do porto do império Blue, ambos como ilhas.
     grafo.ilhas[quantasIlhasGreen] = NULL;
     grafo.ilhas[quantasIlhasGreen+1] = NULL;
 
@@ -247,6 +257,7 @@ int main() {
     char ilha1 [30];
     char ilha2 [30];
     int distancia;
+    //Leitura de distâncias entre ilhas e inserção no grafo.
     while (scanf("%s %s %d", &ilha1, &ilha2, &distancia) != EOF && distancia != -1) {
         int indiceIlha1 = indiceNoVetorDeListas(grafo, ilha1);
         int indiceIlha2 = indiceNoVetorDeListas(grafo, ilha2);
@@ -261,7 +272,7 @@ int main() {
 
         //O primeiro nó de cada lista do vetor "ilhasGreen" é a ilha que possui os vizinhos.
         //Por isso, inserimos sempre após esse nó, ou seja, em seu próximo.
-        //Teremos algo como: G1 (ilha que tem os vizinhos) -> G2 (ilha vizinha) -> G3 (outra ilha vizinha).
+        //Teremos algo como: G1 (ilha que tem os vizinhos) -> G2 (ilha vizinha de G1) -> G3 (outra ilha vizinha de G1).
         grafo.ilhas[indiceIlha1]->prox = inserirNaLista(grafo.ilhas[indiceIlha1]->prox, i2);
 
         //Colocamos na lista de vizinhos da ilha 2 a ilha 1.
@@ -288,6 +299,7 @@ int main() {
     //Árvore de caminhos mínimos a partir de Blue
     arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha);
 
+    //Percorremos o vetor de listas do grafo para verificar a situação de cada ilha do império Green.
     for (int i = 0; i < grafo.quantasIlhasGreen; i++) {
         printf("%s: ", grafo.ilhas[i]->ilha.nome);
         if (limiteDeRecursosRed >= arvRed[i].custoTotal && limiteDeRecursosBlue >= arvBlue[i].custoTotal) {
@@ -305,13 +317,13 @@ int main() {
                 }
             }
         } else {
-            //Só um deles pode conquistar aquela ilha.
+            //Só um deles pode conquistar aquela ilha e a conquistará sem disputa.
             if (limiteDeRecursosRed >= arvRed[i].custoTotal) {
                 printf("Conquistado por Red (%d)\n", arvRed[i].custoTotal);
             } else if (limiteDeRecursosBlue >= arvBlue[i].custoTotal) {
                 printf("Conquistado por Blue (%d)\n", arvBlue[i].custoTotal);
             } else {
-                //Nenhum pode conquistar aquela ilha, ela será mantida por Green.
+                //Nenhum pode conquistar aquela ilha, então ela será mantida por Green.
                 printf("Mantido por Green\n");
             }
         }
