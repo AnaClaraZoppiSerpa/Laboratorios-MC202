@@ -128,11 +128,24 @@ int pesoAresta(Ilha i) {
 }
 
 void liberarMemoriaHeap(Heap* heap) {
-    //TODO
+    heap->tamanhoMaximo = 0;
+    heap->tamanhoAtual = 0;
+    free(heap->vetor);
 }
 
-void liberarMemoria(Grafo* grafo){
-    //TODO
+void liberarLista(No* lista) {
+    if (lista!=NULL) {
+        liberarLista(lista->prox);
+        free(lista);
+    }
+}
+
+void liberarMemoriaGrafo(Grafo* grafo){
+    for (int i = 0; i < grafo->quantasIlhasGreen + 2; i++) {
+        liberarLista(grafo->ilhas[i]);
+    }
+    free(grafo->ilhas);
+    grafo->quantasIlhasGreen = 0;
 }
 
 int indiceNoVetorDeListas(Grafo g, char nomeIlha [30]) {
@@ -190,6 +203,7 @@ Informacao* dijkstra(Grafo g, Ilha inicio) {
             }
         }
     }
+    liberarMemoriaHeap(&heap);
     return pai;
 }
 
@@ -302,6 +316,9 @@ int main() {
             }
         }
     }
+    free(arvBlue);
+    free(arvRed);
+    liberarMemoriaGrafo(&grafo);
 }
 
 
