@@ -37,11 +37,10 @@ typedef struct Heap {
 } Heap;
 
 //Estrutura para guardar a árvore de caminhos mínimos
-typedef struct Relacao {
-    //Exemplo: o G1 é pai do G2.
-    char pai [30]; //G1
-    char filho [30]; //G2
-} Relacao;
+typedef struct Informacao {
+    int pai;
+    int custoTotal;
+} Informacao;
 
 void inicializarHeap(Heap* heap, int tamanhoMaximo) {
     heap->tamanhoMaximo = tamanhoMaximo;
@@ -159,21 +158,24 @@ void imprimirLista(No* lista) {
     }
 }
 
-int* dijkstra(Grafo g, Ilha inicio) {
+Informacao* dijkstra(Grafo g, Ilha inicio) {
     Heap heap;
     inicializarHeap(&heap, g.quantasIlhasGreen + 1);
 
-    int* pai = malloc(heap.tamanhoMaximo * sizeof(int));
+    Informacao* pai = malloc(heap.tamanhoMaximo * sizeof(Informacao));
 
     for (int i = 0; i < heap.tamanhoMaximo; i++) {
-        pai[i] = -1;
+        pai[i].pai = -1;
+        pai[i].custoTotal = INT_MAX;
     }
 
     for (int i = 0; i < heap.tamanhoMaximo - 1; i++) {
         inserirNoHeap(&heap, g.ilhas[i]->ilha, INT_MAX);
     }
     inserirNoHeap(&heap, inicio, 0);
-    pai[indiceNoVetorDeListas(g, inicio.nome)] = indiceNoVetorDeListas(g, inicio.nome);
+    pai[indiceNoVetorDeListas(g, inicio.nome)].pai = indiceNoVetorDeListas(g, inicio.nome);
+    pai[indiceNoVetorDeListas(g, inicio.nome)].custoTotal = 0;
+
     while (!vazio(&heap)) {
         Item minimo = extrairMinimo(&heap);
         No* vizinho = g.ilhas[indiceNoVetorDeListas(g, minimo.vertice.nome)]->prox;
@@ -182,7 +184,8 @@ int* dijkstra(Grafo g, Ilha inicio) {
             while (vizinho != NULL) {
                 if (minimo.prioridade + pesoAresta(vizinho->ilha) < encontrarPrioridade(heap, vizinho->ilha)) {
                     //atualizar pai e tals
-                    pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)] = indiceNoVetorDeListas(g, minimo.vertice.nome);
+                    pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)].pai = indiceNoVetorDeListas(g, minimo.vertice.nome);
+                    pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)].custoTotal = minimo.prioridade + pesoAresta(vizinho->ilha);
                     //pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)] = minimo.prioridade + pesoAresta(vizinho->ilha);
                     diminuirPrioridade(&heap, vizinho->ilha, minimo.prioridade + pesoAresta(vizinho->ilha));
                 }
@@ -266,35 +269,60 @@ int main() {
     }
     //Todas as informações foram lidas e o grafo está com seus vértices e arestas.
     //Agora resta determinar a situação de cada ilha do império Green e imprimir.
-    printf("Leu tudo\n");
 
-    int* arvRed;
-    int* arvBlue;
+    Informacao* arvRed;
+    Informacao* arvBlue;
     //Árvore de caminhos mínimos a partir de Red
     arvRed = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen]->ilha);
     //Árvore de caminhos mínimos a partir de Blue
     arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha);
 
-    printf("ArvRed\n");
-    for (int i = 0; i < quantasIlhasGreen+1; i++) {
-        printf("O pai de %d eh %d\n", i, arvRed[i]);
-        if (arvRed[i] != -1)
-            printf("%d = %s, %d = %s\n", i, grafo.ilhas[i]->ilha.nome, arvRed[i], grafo.ilhas[arvRed[i]]->ilha.nome);
-    }
-    printf("\nArvBlue\n");
-    for (int i = 0; i < quantasIlhasGreen+1; i++) {
-        printf("O pai de %d eh %d\n", i, arvBlue[i]);
-        if (arvBlue[i] != -1)
-            printf("%d = %s, %d = %s\n", i, grafo.ilhas[i]->ilha.nome, arvBlue[i], grafo.ilhas[arvBlue[i]]->ilha.nome);
-    }
+//    printf("ArvRed\n");
+//    for (int i = 0; i < quantasIlhasGreen+1; i++) {
+//        printf("O pai de %d eh %d\n", i, arvRed[i].pai);
+//        if (arvRed[i].pai != -1) {
+//            printf("%d = %s, %d = %s\n", i, grafo.ilhas[i]->ilha.nome, arvRed[i].pai, grafo.ilhas[arvRed[i].pai]->ilha.nome);
+//            printf("Custo total %d\n", arvRed[i].custoTotal);
+//        }
+//    }
+//    printf("\nArvBlue\n");
+//    for (int i = 0; i < quantasIlhasGreen+1; i++) {
+//        printf("O pai de %d eh %d\n", i, arvBlue[i].pai);
+//        if (arvBlue[i].pai != -1) {
+//            printf("%d = %s, %d = %s\n", i, grafo.ilhas[i]->ilha.nome, arvBlue[i].pai, grafo.ilhas[arvBlue[i].pai]->ilha.nome);
+//            printf("Custo total %d\n", arvBlue[i].custoTotal);
+//        }
+//    }
 
-    for (int i = 0; i < grafo.quantasIlhasGreen + 2; i++) {
+    for (int i = 0; i < grafo.quantasIlhasGreen; i++) {
         printf("%s: ", grafo.ilhas[i]->ilha.nome);
-        //Achar o custo mínimo para o império Red conquistar a ilha i.
-        //Achar o custo mínimo para o império Blue conquistar a ilha i.
-        //Comparar esses custos de acordo com as regras e exibir resultado.
-        printf("\n");
+        if (limiteDeRecursosRed >= arvRed[i].custoTotal && limiteDeRecursosBlue >= arvBlue[i].custoTotal) {
+            //Tanto Red quanto Blue são capazes, então aquele cujo custo para conquistar a ilha for menor deve conquistar a ilha.
+            if (arvRed[i].custoTotal < arvBlue[i].custoTotal) {
+                printf("Conquistado por Red (%d)\n", arvRed[i].custoTotal);
+            } else if (arvRed[i].custoTotal > arvBlue[i].custoTotal) {
+                printf("Conquistado por Blue (%d)\n", arvBlue[i].custoTotal);
+            } else {
+                //Os dois impérios podem conquistar a ilha com o mesmo custo. Então aquele com o maior limite de recursos a conquista.
+                if (limiteDeRecursosRed > limiteDeRecursosBlue) {
+                    printf("Conquistado por Red (%d)\n", arvRed[i].custoTotal);
+                } else {
+                    printf("Conquistado por Blue (%d)\n", arvBlue[i].custoTotal);
+                }
+            }
+        } else {
+            //Só um deles pode conquistar aquela ilha.
+            if (limiteDeRecursosRed >= arvRed[i].custoTotal) {
+                printf("Conquistado por Red (%d)\n", arvRed[i].custoTotal);
+            } else if (limiteDeRecursosBlue >= arvBlue->custoTotal) {
+                printf("Conquistado por Blue (%d)\n", arvBlue[i].custoTotal);
+            } else {
+                //Nenhum pode conquistar aquela ilha, ela será mantida por Green.
+                printf("Mantido por Green\n");
+            }
+        }
     }
+    printf("Acabou\n");
 }
 
 
