@@ -200,10 +200,8 @@ Informacao* dijkstra(Grafo g, Ilha inicio) {
                 //Se o custo é minimizado, atualizamos o pai e o custo total na árvore de caminhos mínimos, assim como a
                 //prioridade no heap.
                 if (minimo.prioridade + pesoAresta(vizinho->ilha) < encontrarPrioridade(heap, vizinho->ilha)) {
-                    //atualizar pai e tals
                     pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)].pai = indiceNoVetorDeListas(g, minimo.vertice.nome);
                     pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)].custoTotal = minimo.prioridade + pesoAresta(vizinho->ilha);
-                    //pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)] = minimo.prioridade + pesoAresta(vizinho->ilha);
                     diminuirPrioridade(&heap, vizinho->ilha, minimo.prioridade + pesoAresta(vizinho->ilha));
                 }
                 vizinho = vizinho->prox;
