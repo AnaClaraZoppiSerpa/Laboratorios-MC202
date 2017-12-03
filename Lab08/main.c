@@ -115,6 +115,7 @@ int encontrarPrioridade(Heap heap, Ilha ilha) {
             return heap.vetor[i].prioridade;
         }
     }
+    return -1;
 }
 
 void imprimirHeap(Heap heap) {
@@ -158,11 +159,14 @@ void imprimirLista(No* lista) {
     }
 }
 
-void dijkstra(Grafo g, Ilha inicio) {
+int* dijkstra(Grafo g, Ilha inicio) {
     Heap heap;
-    inicializarHeap(&heap, g.quantasIlhasGreen + 2);
+    inicializarHeap(&heap, g.quantasIlhasGreen + 1);
 
-    for (int i = 0; i < g.quantasIlhasGreen + 2; i++) {
+    int* pai = malloc((heap.tamanhoMaximo) * sizeof(int));
+
+    for (int i = 0; i < heap.tamanhoMaximo - 1; i++) {
+        pai[i] = -1;
         inserirNoHeap(&heap, g.ilhas[i]->ilha, INT_MAX);
     }
     inserirNoHeap(&heap, inicio, 0);
@@ -174,12 +178,14 @@ void dijkstra(Grafo g, Ilha inicio) {
             while (vizinho != NULL) {
                 if (minimo.prioridade + pesoAresta(vizinho->ilha) < encontrarPrioridade(heap, vizinho->ilha)) {
                     //atualizar pai e tals
+                    pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)] = indiceNoVetorDeListas(g, minimo.vertice.nome);
                     diminuirPrioridade(&heap, vizinho->ilha, minimo.prioridade + pesoAresta(vizinho->ilha));
                 }
                 vizinho = vizinho->prox;
             }
         }
     }
+    return pai;
 }
 
 int main() {
@@ -203,6 +209,8 @@ int main() {
 
         grafo.ilhas[i] = inserirNaLista(grafo.ilhas[i], ilha);
     }
+    grafo.ilhas[quantasIlhasGreen] = NULL;
+    grafo.ilhas[quantasIlhasGreen+1] = NULL;
 
     Ilha red;
     strcpy(red.nome, "Red");
@@ -254,6 +262,24 @@ int main() {
     //Todas as informações foram lidas e o grafo está com seus vértices e arestas.
     //Agora resta determinar a situação de cada ilha do império Green e imprimir.
     printf("Leu tudo\n");
+
+    int* arvRed = malloc((grafo.quantasIlhasGreen+2)*sizeof(int));
+    int* arvBlue = malloc((grafo.quantasIlhasGreen+2)*sizeof(int));
+    //Árvore de caminhos mínimos a partir de Red
+    arvRed = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen]->ilha);
+    //Árvore de caminhos mínimos a partir de Blue
+    arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha);
+
+    printf("ArvRed\n");
+    for (int i = 0; i < quantasIlhasGreen+2; i++) {
+        printf("O pai de %d eh %d\n", i, arvRed[i]);
+        printf("%d = %s, %d = %s\n", i, grafo.ilhas[i]->ilha.nome, arvRed[i], grafo.ilhas[arvRed[i]]->ilha.nome);
+    }
+    printf("\nArvBlue\n");
+    for (int i = 0; i < quantasIlhasGreen+2; i++) {
+        printf("O pai de %d eh %d\n", i, arvBlue[i]);
+        printf("%d = %s, %d = %s\n", i, grafo.ilhas[i]->ilha.nome, arvBlue[i], grafo.ilhas[arvBlue[i]]->ilha.nome);
+    }
 
     for (int i = 0; i < grafo.quantasIlhasGreen + 2; i++) {
         printf("%s: ", grafo.ilhas[i]->ilha.nome);
