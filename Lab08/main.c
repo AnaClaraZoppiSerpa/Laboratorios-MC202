@@ -314,7 +314,7 @@ int main() {
             //Só um deles pode conquistar aquela ilha.
             if (limiteDeRecursosRed >= arvRed[i].custoTotal) {
                 printf("Conquistado por Red (%d)\n", arvRed[i].custoTotal);
-            } else if (limiteDeRecursosBlue >= arvBlue->custoTotal) {
+            } else if (limiteDeRecursosBlue >= arvBlue[i].custoTotal) {
                 printf("Conquistado por Blue (%d)\n", arvBlue[i].custoTotal);
             } else {
                 //Nenhum pode conquistar aquela ilha, ela será mantida por Green.
