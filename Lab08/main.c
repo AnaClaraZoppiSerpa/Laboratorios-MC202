@@ -160,19 +160,16 @@ void imprimirLista(No* lista) {
 
 Informacao* dijkstra(Grafo g, Ilha inicio) {
     Heap heap;
-    inicializarHeap(&heap, g.quantasIlhasGreen + 1);
+    inicializarHeap(&heap, g.quantasIlhasGreen + 2);
 
-    Informacao* pai = malloc(heap.tamanhoMaximo * sizeof(Informacao));
+    Informacao* pai = malloc((g.quantasIlhasGreen + 2) * sizeof(Informacao));
 
-    for (int i = 0; i < heap.tamanhoMaximo; i++) {
+    for (int i = 0; i < g.quantasIlhasGreen + 2; i++) {
         pai[i].pai = -1;
         pai[i].custoTotal = INT_MAX;
-    }
-
-    for (int i = 0; i < heap.tamanhoMaximo - 1; i++) {
         inserirNoHeap(&heap, g.ilhas[i]->ilha, INT_MAX);
     }
-    inserirNoHeap(&heap, inicio, 0);
+    diminuirPrioridade(&heap, inicio, 0);
     pai[indiceNoVetorDeListas(g, inicio.nome)].pai = indiceNoVetorDeListas(g, inicio.nome);
     pai[indiceNoVetorDeListas(g, inicio.nome)].custoTotal = 0;
 
@@ -270,29 +267,12 @@ int main() {
     //Todas as informações foram lidas e o grafo está com seus vértices e arestas.
     //Agora resta determinar a situação de cada ilha do império Green e imprimir.
 
-    Informacao* arvRed;
-    Informacao* arvBlue;
+    Informacao* arvRed = NULL;
+    Informacao* arvBlue = NULL;
     //Árvore de caminhos mínimos a partir de Red
     arvRed = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen]->ilha);
     //Árvore de caminhos mínimos a partir de Blue
     arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha);
-
-//    printf("ArvRed\n");
-//    for (int i = 0; i < quantasIlhasGreen+1; i++) {
-//        printf("O pai de %d eh %d\n", i, arvRed[i].pai);
-//        if (arvRed[i].pai != -1) {
-//            printf("%d = %s, %d = %s\n", i, grafo.ilhas[i]->ilha.nome, arvRed[i].pai, grafo.ilhas[arvRed[i].pai]->ilha.nome);
-//            printf("Custo total %d\n", arvRed[i].custoTotal);
-//        }
-//    }
-//    printf("\nArvBlue\n");
-//    for (int i = 0; i < quantasIlhasGreen+1; i++) {
-//        printf("O pai de %d eh %d\n", i, arvBlue[i].pai);
-//        if (arvBlue[i].pai != -1) {
-//            printf("%d = %s, %d = %s\n", i, grafo.ilhas[i]->ilha.nome, arvBlue[i].pai, grafo.ilhas[arvBlue[i].pai]->ilha.nome);
-//            printf("Custo total %d\n", arvBlue[i].custoTotal);
-//        }
-//    }
 
     for (int i = 0; i < grafo.quantasIlhasGreen; i++) {
         printf("%s: ", grafo.ilhas[i]->ilha.nome);
@@ -322,7 +302,6 @@ int main() {
             }
         }
     }
-    printf("Acabou\n");
 }
 
 
