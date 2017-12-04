@@ -35,8 +35,8 @@
       <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="202" column="36" lean-forward="false" selection-start-line="202" selection-start-column="36" selection-end-line="202" selection-end-column="36" />
+            <state relative-caret-position="436">
+              <caret line="295" column="92" lean-forward="false" selection-start-line="295" selection-start-column="92" selection-end-line="295" selection-end-column="92" />
               <folding>
                 <element signature="e#112#130#0" expanded="true" />
               </folding>
@@ -52,6 +52,7 @@
       <find>inserirnalista</find>
       <find>DIJKSTRA</find>
       <find>malloc</find>
+      <find>pai = 19</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -154,12 +155,14 @@
       <workItem from="1512187879137" duration="607000" />
       <workItem from="1512216585205" duration="22088000" />
       <workItem from="1512256329049" duration="10453000" />
-      <workItem from="1512267325989" duration="9126000" />
+      <workItem from="1512267325989" duration="12534000" />
+      <workItem from="1512311236686" duration="4687000" />
+      <workItem from="1512341791357" duration="3969000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="68166000" />
+    <option name="totallyTimeSpent" value="80230000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
@@ -197,27 +200,60 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/main.c</url>
-          <line>189</line>
-          <option name="timeStamp" value="21" />
-        </line-breakpoint>
-      </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="22" />
+      <option name="time" value="24" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="CMakeRunConfiguration">
-        <watch expression="minimo.vertice.nome" language="ObjectiveC" />
-        <watch expression="vizinho-&gt;ilha.nome" language="ObjectiveC" />
+        <watch expression="minimo.prioridade + pesoAresta(vizinho-&gt;ilha)" language="ObjectiveC" />
+        <watch expression="minimo.prioridade" language="ObjectiveC" />
+        <watch expression="pesoAresta(vizinho-&gt;ilha)" language="ObjectiveC" />
+        <watch expression="vizinho-&gt;ilha.distancia" language="ObjectiveC" />
+        <watch expression="vizinho-&gt;ilha.poderMilitar" language="ObjectiveC" />
         <watch expression="indiceNoVetorDeListas(g, vizinho-&gt;ilha.nome)" language="ObjectiveC" />
+        <watch expression="indiceNoVetorDeListas(g, minimo.vertice.nome)" language="ObjectiveC" />
       </configuration>
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3990">
+          <caret line="190" column="43" lean-forward="true" selection-start-line="190" selection-start-column="43" selection-end-line="190" selection-end-column="43" />
+          <folding>
+            <element signature="e#112#130#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4242">
+          <caret line="202" column="0" lean-forward="false" selection-start-line="202" selection-start-column="0" selection-end-line="202" selection-end-column="0" />
+          <folding>
+            <element signature="e#112#130#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -424,10 +460,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../Lab07/main.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="202" column="36" lean-forward="false" selection-start-line="202" selection-start-column="36" selection-end-line="202" selection-end-column="36" />
+        <state relative-caret-position="436">
+          <caret line="295" column="92" lean-forward="false" selection-start-line="295" selection-start-column="92" selection-end-line="295" selection-end-column="92" />
           <folding>
             <element signature="e#112#130#0" expanded="true" />
           </folding>

@@ -12,6 +12,8 @@ typedef struct Ilha {
     char nome [30];
     int poderMilitar;
     int distancia;
+    int conquistaRed;
+    int conquistaBlue;
 } Ilha;
 
 //Nosso grafo será implementado com Listas de Adjacência.
@@ -165,7 +167,7 @@ No* inserirNaLista(No* lista, Ilha nova) {
     return novo;
 }
 
-Informacao* dijkstra(Grafo g, Ilha inicio) {
+Informacao* dijkstra(Grafo g, Ilha inicio, int evitarRed, int evitarBlue) {
     Heap heap;
     inicializarHeap(&heap, g.quantasIlhasGreen + 2);
 
@@ -192,7 +194,6 @@ Informacao* dijkstra(Grafo g, Ilha inicio) {
         //Como o primeiro nó de cada lista é o vértice cujos vizinhos serão apresentados na lista, o primeiro vizinho é
         //o segundo nó da lista.
         No* vizinho = g.ilhas[indiceNoVetorDeListas(g, minimo.vertice.nome)]->prox;
-
         //Vértice já visitado, afinal, sua prioridade foi atualizada e não é mais INT_MAX.
         if (minimo.prioridade != INT_MAX) {
             //Verificamos os vértices adjacentes.
@@ -200,9 +201,11 @@ Informacao* dijkstra(Grafo g, Ilha inicio) {
                 //Se o custo é minimizado, atualizamos o pai e o custo total na árvore de caminhos mínimos, assim como a
                 //prioridade no heap.
                 if (minimo.prioridade + pesoAresta(vizinho->ilha) < encontrarPrioridade(heap, vizinho->ilha)) {
-                    pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)].pai = indiceNoVetorDeListas(g, minimo.vertice.nome);
-                    pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)].custoTotal = minimo.prioridade + pesoAresta(vizinho->ilha);
-                    diminuirPrioridade(&heap, vizinho->ilha, minimo.prioridade + pesoAresta(vizinho->ilha));
+                    if (!(minimo.vertice.conquistaBlue && evitarBlue) && !(minimo.vertice.conquistaRed && evitarRed)) {
+                        pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)].pai = indiceNoVetorDeListas(g, minimo.vertice.nome);
+                        pai[indiceNoVetorDeListas(g, vizinho->ilha.nome)].custoTotal = minimo.prioridade + pesoAresta(vizinho->ilha);
+                        diminuirPrioridade(&heap, vizinho->ilha, minimo.prioridade + pesoAresta(vizinho->ilha));
+                    }
                 }
                 vizinho = vizinho->prox;
             }
@@ -232,6 +235,8 @@ int main() {
         scanf("%s", &ilha.nome);
         scanf("%d", &ilha.poderMilitar);
         ilha.distancia = 0;
+        ilha.conquistaRed = 0;
+        ilha.conquistaBlue = 0;
 
         grafo.ilhas[i] = inserirNaLista(grafo.ilhas[i], ilha);
     }
@@ -243,11 +248,15 @@ int main() {
     strcpy(red.nome, "Red");
     red.distancia = 0;
     red.poderMilitar = 0;
+    red.conquistaRed = 0;
+    red.conquistaBlue = 0;
 
     Ilha blue;
     strcpy(blue.nome, "Blue");
     blue.distancia = 0;
     blue.poderMilitar = 0;
+    blue.conquistaRed = 0;
+    blue.conquistaBlue = 0;
 
     grafo.ilhas[quantasIlhasGreen] = inserirNaLista(grafo.ilhas[quantasIlhasGreen], red);
     grafo.ilhas[quantasIlhasGreen + 1] = inserirNaLista(grafo.ilhas[quantasIlhasGreen + 1], blue);
@@ -285,7 +294,6 @@ int main() {
         //os vizinhos que se seguirão na lista.
         //Assim, para não perder esse informação, a inserção ocorre sempre no segundo nó da lista.
         grafo.ilhas[indiceIlha2]->prox = inserirNaLista(grafo.ilhas[indiceIlha2]->prox, i1);
-
     }
     //Todas as informações foram lidas e o grafo está com seus vértices e arestas.
     //Agora resta determinar a situação de cada ilha do império Green e imprimir.
@@ -293,9 +301,9 @@ int main() {
     Informacao* arvRed = NULL;
     Informacao* arvBlue = NULL;
     //Árvore de caminhos mínimos a partir de Red
-    arvRed = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen]->ilha);
+    arvRed = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen]->ilha, 0, 0);
     //Árvore de caminhos mínimos a partir de Blue
-    arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha);
+    arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha, 0, 0);
 
     //Percorremos o vetor de listas do grafo para verificar a situação de cada ilha do império Green.
     for (int i = 0; i < grafo.quantasIlhasGreen; i++) {
@@ -304,22 +312,34 @@ int main() {
             //Tanto Red quanto Blue são capazes, então aquele cujo custo para conquistar a ilha for menor deve conquistar a ilha.
             if (arvRed[i].custoTotal < arvBlue[i].custoTotal) {
                 printf("Conquistado por Red (%d)\n", arvRed[i].custoTotal);
+                grafo.ilhas[i]->ilha.conquistaRed = 1;
+                arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha, 1, 0);
             } else if (arvRed[i].custoTotal > arvBlue[i].custoTotal) {
                 printf("Conquistado por Blue (%d)\n", arvBlue[i].custoTotal);
+                grafo.ilhas[i]->ilha.conquistaBlue = 1;
+                arvRed = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen]->ilha, 0, 1);
             } else {
                 //Os dois impérios podem conquistar a ilha com o mesmo custo. Então aquele com o maior limite de recursos a conquista.
                 if (limiteDeRecursosRed > limiteDeRecursosBlue) {
                     printf("Conquistado por Red (%d)\n", arvRed[i].custoTotal);
+                    grafo.ilhas[i]->ilha.conquistaRed = 1;
+                    arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha, 1, 0);
                 } else {
                     printf("Conquistado por Blue (%d)\n", arvBlue[i].custoTotal);
+                    grafo.ilhas[i]->ilha.conquistaBlue = 1;
+                    arvRed = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen]->ilha, 0, 1);
                 }
             }
         } else {
             //Só um deles pode conquistar aquela ilha e a conquistará sem disputa.
             if (limiteDeRecursosRed >= arvRed[i].custoTotal) {
                 printf("Conquistado por Red (%d)\n", arvRed[i].custoTotal);
+                grafo.ilhas[i]->ilha.conquistaRed = 1;
+                arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha, 1, 0);
             } else if (limiteDeRecursosBlue >= arvBlue[i].custoTotal) {
                 printf("Conquistado por Blue (%d)\n", arvBlue[i].custoTotal);
+                grafo.ilhas[i]->ilha.conquistaBlue = 1;
+                arvRed = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen]->ilha, 0, 1);
             } else {
                 //Nenhum pode conquistar aquela ilha, então ela será mantida por Green.
                 printf("Mantido por Green\n");
