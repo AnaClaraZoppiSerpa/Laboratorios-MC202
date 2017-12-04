@@ -167,6 +167,9 @@ No* inserirNaLista(No* lista, Ilha nova) {
     return novo;
 }
 
+//O algoritmo de Dijkstra encontrará a árvore de caminhos mínimos, mas com restrições.
+//Ou seja, evitando passar por ilhas já conquistadas pelo outro império.
+//Quais tipos de ilhas (conquistadas por blue ou por red) devem ser evitadas é controlado a pelos parâmetros da função.
 Informacao* dijkstra(Grafo g, Ilha inicio, int evitarRed, int evitarBlue) {
     Heap heap;
     inicializarHeap(&heap, g.quantasIlhasGreen + 2);
@@ -235,6 +238,7 @@ int main() {
         scanf("%s", &ilha.nome);
         scanf("%d", &ilha.poderMilitar);
         ilha.distancia = 0;
+        //A princípio essa ilha não foi conquistada por ninguém.
         ilha.conquistaRed = 0;
         ilha.conquistaBlue = 0;
 
@@ -305,6 +309,9 @@ int main() {
     //Árvore de caminhos mínimos a partir de Blue
     arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha, 0, 0);
 
+    //Para essas primeiras árvores, não é necessário evitar ilhas conquistadas por Red nem por Blue.
+    //Será necessário conforme recalcularmos a árvore de acordo com as conquistas.
+
     //Percorremos o vetor de listas do grafo para verificar a situação de cada ilha do império Green.
     for (int i = 0; i < grafo.quantasIlhasGreen; i++) {
         printf("%s: ", grafo.ilhas[i]->ilha.nome);
@@ -312,8 +319,8 @@ int main() {
             //Tanto Red quanto Blue são capazes, então aquele cujo custo para conquistar a ilha for menor deve conquistar a ilha.
             if (arvRed[i].custoTotal < arvBlue[i].custoTotal) {
                 printf("Conquistado por Red (%d)\n", arvRed[i].custoTotal);
-                grafo.ilhas[i]->ilha.conquistaRed = 1;
-                arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha, 1, 0);
+                grafo.ilhas[i]->ilha.conquistaRed = 1; //Marcar a ilha como conquistada.
+                arvBlue = dijkstra(grafo, grafo.ilhas[quantasIlhasGreen + 1]->ilha, 1, 0); //Evitar passar por ilhas conquistadas pelo outro império na árvore de caminhos mínimos.
             } else if (arvRed[i].custoTotal > arvBlue[i].custoTotal) {
                 printf("Conquistado por Blue (%d)\n", arvBlue[i].custoTotal);
                 grafo.ilhas[i]->ilha.conquistaBlue = 1;
